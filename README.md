@@ -7,7 +7,10 @@
     - from app import db
     - db.create_all()
     - db.session.commit()
+
+# RUN THE APP
 1. python application.py
+1. backend is now served on localhost:8000
 
 # TO LOAD VERBS
 1. from home dir:
