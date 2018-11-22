@@ -9,6 +9,6 @@ from .utils import jsonify_verb
 
 @app.route('/verbs')
 def verb_list():
-    start = int(request.args.get('s'))
-    end = int(request.args.get('e'))
+    start = int(request.args.get('s', 0))
+    end = int(request.args.get('e', 100))
     return json.dumps([jsonify_verb(v) for v in Verb.query.all()[start:end]]), 200
