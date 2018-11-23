@@ -1,6 +1,14 @@
 import enum
 
 
+class EnglishMood(enum.Enum):
+    IMPERATIVE_AFFIRMATIVE = 'Imperative Affirmative'
+    SUBJUNCTIVE = 'Subjunctive'
+    IMPERATIVE_NEGATIVE = 'Imperative Negative'
+    INDICATIVE = 'Indicative'
+    pass
+
+
 class EnglishTense(enum.Enum):
     # 'Conditional Perfect'
     # 'Conditional'

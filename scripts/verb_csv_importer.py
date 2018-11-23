@@ -1,11 +1,18 @@
 """
-Make sure to EXPORT PYTHON_PATH=. from the root dir before running this
+Make sure to EXPORT PYTHONPATH=. from the root dir before running this
 Then run python scripts/verb_csv_importer <path_to_file>
 """
 import csv
 import sys
 
+from src.constants import EnglishMood
 from src.models import Verb, VerbConjugation
+
+WEIRD_MOODS = [
+    EnglishMood.IMPERATIVE_AFFIRMATIVE.value, 
+    EnglishMood.IMPERATIVE_NEGATIVE.value, 
+    EnglishMood.SUBJUNCTIVE.value
+]
 
 def main():
     filename = sys.argv[1]
@@ -15,6 +22,7 @@ def main():
     verb_ids_by_infinitive = {}
     saved_verbs = 0
     saved_conjugation = 0
+    tenses = set()
 
     for verb_row in verb_list:
         infinitive, infinitive_english, mood, mood_english, tense, tense_english, verb_english, \
@@ -24,6 +32,8 @@ def main():
         # skip header
         if 'infinitive' in infinitive:
             continue
+        
+        tenses.add(tense)
         
         verb_id = verb_ids_by_infinitive.get(infinitive, None)
         if not verb_id:
@@ -38,7 +48,15 @@ def main():
             verb_id = verb.id
             verb_ids_by_infinitive[infinitive] = verb_id
             saved_verbs += 1
-        
+        if mood_english in WEIRD_MOODS:
+            if mood_english in [EnglishMood.IMPERATIVE_AFFIRMATIVE.value, EnglishMood.IMPERATIVE_NEGATIVE.value]:
+                if mood_english == EnglishMood.IMPERATIVE_NEGATIVE.value:
+                    continue
+                else:
+                    mood = 'Imperativo'
+            tense = "%s - %s" % (tense, mood)
+            tenses.add(tense)
+
         conjugation = VerbConjugation(
             verb_id=verb_id,
             tense=tense,
@@ -54,6 +72,7 @@ def main():
         saved_conjugation += 1
 
     print('Saved %s verbs!\nSaved %s conjugations!' % (saved_verbs, saved_conjugation))
+    print('Here are all the tenses:\n%s' % ', '.join(tenses))
 
 
 if __name__ == '__main__':
