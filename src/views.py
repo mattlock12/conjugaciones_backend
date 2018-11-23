@@ -11,5 +11,7 @@ from .utils import jsonify_verb
 @app.route('/verbs')
 def verb_list():
     # TODO: weight verbs and return irregulars more
-    all_verbs = [jsonify_verb(v) for v in Verb.query.all()]
-    return json.dumps(random.sample(all_verbs, 50)), 200
+    if not hasattr(app, 'all_verbs'):
+        all_verbs = [jsonify_verb(v) for v in Verb.query.all()]
+        app.all_verbs = all_verbs
+    return json.dumps(random.sample(app.all_verbs, 50)), 200
