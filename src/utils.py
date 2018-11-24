@@ -7,6 +7,7 @@ def jsonify_verb(verb):
         "pastParticiple": verb.past_participle,
         "conjugations": [
             {
+                "id": c.id,
                 "tense": c.tense,
                 "tenseEnglish": c.tense_english,
                 "form1s": c.form_1s,

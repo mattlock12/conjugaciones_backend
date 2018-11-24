@@ -51,3 +51,24 @@ class VerbConjugation(db.Model, BaseModelMixin):
         self.form_1p = form_1p
         self.form_2p = form_2p
         self.form_3p = form_3p
+
+
+class VerbConjugationResponse(db.Model, BaseModelMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    verb_conjugation_id = db.Column(db.Integer, db.ForeignKey('verb_conjugation.id'), nullable=False)
+    form_1s_correct = db.Column(db.Boolean(128))
+    form_2s_correct = db.Column(db.Boolean(128))
+    form_3s_correct = db.Column(db.Boolean(128))
+    form_1p_correct = db.Column(db.Boolean(128))
+    form_2p_correct = db.Column(db.Boolean(128))
+    form_3p_correct = db.Column(db.Boolean(128))
+
+    def __init__(verb_conjugation_id, form_1s_correct, form_2s_correct, form_3s_correct, 
+        form_1p_correct, form_2p_correct, form_3p_correct):
+        self.verb_conjugation_id = verb_conjugation_id
+        self.form_1s_correct = form_1s_correct
+        self.form_2s_correct = form_2s_correct
+        self.form_3s_correct = form_3s_correct
+        self.form_1p_correct = form_1p_correct
+        self.form_2p_correct = form_2p_correct
+        self.form_3p_correct = form_3p_correct
