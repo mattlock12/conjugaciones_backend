@@ -12,3 +12,4 @@ pgdata
 
 # webpack build
 static
+node_modules
