@@ -1,20 +1,26 @@
 version: "3"
 services:
-  web:
-    restart: on-failure
-    build: .
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-
   db:
     image: postgres
     restart: always
     environment:
-      POSTGRES_USER: 'mattmatt'
-      POSTGRES_PASSWORD: 'mattmatt'
+      POSTGRES_USER: 'conjugaciones-user'
+      POSTGRES_PASSWORD: 'PASSWORD'
       POSTGRES_DB: 'conjugaciones'
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  web:
+    build: .
+    restart: on-failure
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+
+
 

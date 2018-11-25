@@ -5,13 +5,9 @@ from flask import request
 
 from app import app
 from .constants import MOST_COMMON
-from .models import Verb, VerbConjugation, VerbConjugationResponse
+from .models import Verb, VerbConjugation
 from .utils import jsonify_verb
 
-
-@app.route('/justwhatever')
-def whatever():
-    return "OKOKOK", 200
 
 @app.route('/verbs')
 def verb_list():
@@ -27,30 +23,36 @@ def verb_list():
         random.sample(app.all_verbs, 25) + random.sample(app.most_common, 25)
         ), 200
 
-@app.route('/responses', methods=['POST'])
-def responses():
-    conjugation = VerbConjugation.query.filter(id=int(request.form['conjugation_id']))
-    if not conjugation:
-        return 'No such conjugation', 400
-    
-    form1s = request.form.get('form1s', None)
-    form2s = request.form.get('form1ps', None)
-    form3s = request.form.get('form1ps', None)
-    form1p = request.form.get('form1ps', None)
-    form2p = request.form.get('form1ps', None)
-    form3p = request.form.get('form1ps', None)
 
-    
+# TODO
+# @app.route('/responses', methods=['POST'])
+# def responses():
+#     conjugation = VerbConjugation.query.filter(id=int(request.form['conjugation_id']))
+#     if not conjugation:
+#         return 'No such conjugation', 400
+#     answers = {
+#         'form_1s': request.form.get('form_1s', None),
+#         'form_2s': request.form.get('form_1ps', None),
+#         'form_3s': request.form.get('form_1ps', None),
+#         'form_1p': request.form.get('form_1ps', None),
+#         'form_2p': request.form.get('form_1ps', None),
+#         'form_3p': request.form.get('form_1ps', None),
+#     }
 
-    vcr_kwargs = {
-        'verb_conjugation_id': conjugation.id,
-        'answer_form1s': request.form.get('answer_form1s', None),
-        'answer_form2s': request.form.get('answer_form1ps', None),
-        'answer_form3s': request.form.get('answer_form1ps', None),
-        'answer_form1p': request.form.get('answer_form1ps', None),
-        'answer_form2p': request.form.get('answer_form1ps', None),
-        'answer_form3p': request.form.get('answer_form1ps', None),
-    }
-    vcr = VerbConjugationResponse(**vcr_kwargs)
-    vcr.save()
-    return 'ok', 200
+#     vcr_kwargs = {
+#         'verb_conjugation_id': conjugation.id,
+#         'form_1s_correct': None,
+#         'form_2s_correct': None,
+#         'form_3s_correct': None,
+#         'form_1p_correct': None,
+#         'form_2p_correct': None,
+#         'form_3p_correct': None,
+#     }
+
+#     for form_person, answer in answers.items():
+#         if answer is not None:
+#             vcr_kwargs['%s_correct' % form_person] = answer.lower() == getattr(conjugation, form_person).lower()
+
+#     vcr = VerbConjugationResponse(**vcr_kwargs)
+#     vcr.save()
+#     return 'ok', 200

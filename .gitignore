@@ -6,3 +6,6 @@ venv
 
 # vscode
 .vscode
+
+# docker data volume for postgres
+pgdata

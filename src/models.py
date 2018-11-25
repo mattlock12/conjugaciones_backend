@@ -13,6 +13,14 @@ class BaseModelMixin(object):
         db.session.commit()
 
 
+# TODO
+# class User(db.Model, BaseModelMixin):
+#     id = db.Column(db.Integer, primary_key=True)
+#     token = db.Column(db.String(128), unique=True, nullable=True)
+#     username = db.Column(db.String(128), unique=True)
+#     password = db.Column(db.String(128), unique=True)
+
+
 class Verb(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
     infinitive = db.Column(db.String(128), unique=True, index=True, nullable=False)
@@ -27,6 +35,7 @@ class Verb(db.Model, BaseModelMixin):
         self.infinitive_english = infinitive_english
         self.past_participle = past_participle
         self.gerund = gerund
+
 
 
 class VerbConjugation(db.Model, BaseModelMixin):
@@ -53,22 +62,23 @@ class VerbConjugation(db.Model, BaseModelMixin):
         self.form_3p = form_3p
 
 
-class VerbConjugationResponse(db.Model, BaseModelMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    verb_conjugation_id = db.Column(db.Integer, db.ForeignKey('verb_conjugation.id'), nullable=False)
-    form_1s_correct = db.Column(db.Boolean(128))
-    form_2s_correct = db.Column(db.Boolean(128))
-    form_3s_correct = db.Column(db.Boolean(128))
-    form_1p_correct = db.Column(db.Boolean(128))
-    form_2p_correct = db.Column(db.Boolean(128))
-    form_3p_correct = db.Column(db.Boolean(128))
+# TODO
+# class VerbConjugationResponse(db.Model, BaseModelMixin):
+#     id = db.Column(db.Integer, primary_key=True)
+#     verb_conjugation_id = db.Column(db.Integer, db.ForeignKey('verb_conjugation.id'), nullable=False)
+#     form_1s_correct = db.Column(db.Boolean(128))
+#     form_2s_correct = db.Column(db.Boolean(128))
+#     form_3s_correct = db.Column(db.Boolean(128))
+#     form_1p_correct = db.Column(db.Boolean(128))
+#     form_2p_correct = db.Column(db.Boolean(128))
+#     form_3p_correct = db.Column(db.Boolean(128))
 
-    def __init__(verb_conjugation_id, form_1s_correct, form_2s_correct, form_3s_correct, 
-        form_1p_correct, form_2p_correct, form_3p_correct):
-        self.verb_conjugation_id = verb_conjugation_id
-        self.form_1s_correct = form_1s_correct
-        self.form_2s_correct = form_2s_correct
-        self.form_3s_correct = form_3s_correct
-        self.form_1p_correct = form_1p_correct
-        self.form_2p_correct = form_2p_correct
-        self.form_3p_correct = form_3p_correct
+#     def __init__(self, verb_conjugation_id, form_1s_correct, form_2s_correct, form_3s_correct, 
+#         form_1p_correct, form_2p_correct, form_3p_correct):
+#         self.verb_conjugation_id = verb_conjugation_id
+#         self.form_1s_correct = form_1s_correct
+#         self.form_2s_correct = form_2s_correct
+#         self.form_3s_correct = form_3s_correct
+#         self.form_1p_correct = form_1p_correct
+#         self.form_2p_correct = form_2p_correct
+#         self.form_3p_correct = form_3p_correct
