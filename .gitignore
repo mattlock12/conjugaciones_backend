@@ -9,3 +9,6 @@ venv
 
 # docker data volume for postgres
 pgdata
+
+# webpack build
+static
