@@ -40,3 +40,6 @@ Serves json responses of Spanish verbs and their conjugations in various tenses 
     - `export PYTHONPATH=.`
     - `python scripts/verb_csv_importer.py ./verbs.csv`
 1. backend is now served on `localhost:8000`
+
+
+USE: https://www.randomlists.com/data/spanish-words.json
