@@ -5,10 +5,10 @@ const webpack = require('webpack');
 
 module.exports = {
     mode: 'development',
-    entry: './client/src/index.js',
+    entry: './src/index.js',
     devtool: 'inline-source-map',
     devServer: {
-        contentBase: './static',
+        contentBase: './dist',
         hot: true,
         port: 9000
     },
@@ -31,11 +31,11 @@ module.exports = {
         new HtmlWebpackPlugin({
             'title': 'Basic Webpack Hot Reloading Setup',
             'hash': true,
-            'template': 'client/src/index.html'
+            'template': './src/index.html'
         })
     ],
     output: {
         filename: 'static/[name].bundle.js',
-        path: path.resolve(__dirname, 'static')
+        path: path.resolve(__dirname, 'dist')
     }
 };

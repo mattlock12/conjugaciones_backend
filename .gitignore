@@ -1,5 +1,5 @@
 # virtualenv
-venv
+*venv
 
 # caches
 *__pycache__
@@ -11,5 +11,5 @@ venv
 pgdata
 
 # webpack build
-static
-node_modules
+*static
+*node_modules

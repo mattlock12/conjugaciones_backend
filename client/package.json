@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "build": "webpack --config webpack.config.js --progress --colors --display-error-details",
-    "start": "webpack-dev-server --hot --display-error-details"
+    "start": "webpack-dev-server --hot --display-error-details --host 0.0.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",

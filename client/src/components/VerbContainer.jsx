@@ -88,7 +88,7 @@ export default class VerbContainer extends Component {
     }
 
     render() {
-        const { hasLoaded, tenses, verbs, idx, formValues } = this.state;
+        const { hasLoaded, tenses, verbs, idx } = this.state;
         const verb = verbs[idx];
 
         return (
