@@ -9,4 +9,3 @@ RUN apt-get update && apt-get install apt-transport-https &&\
     apt-get update && apt-get install -y yarn
 WORKDIR /app
 RUN yarn install
-CMD [ "npm", "run", "build"]
