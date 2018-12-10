@@ -9,6 +9,10 @@ from .models import Verb, VerbConjugation
 from .utils import jsonify_verb
 
 
+@app.route('/')
+def index():
+    return app.send_static_file('index.html'), 200
+
 @app.route('/verbs')
 def verb_list():
     # TODO: weight verbs and return irregulars more

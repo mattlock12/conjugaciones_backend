@@ -1,5 +1,5 @@
 # virtualenv
-venv
+*venv
 
 # caches
 *__pycache__
@@ -9,3 +9,8 @@ venv
 
 # docker data volume for postgres
 pgdata
+
+# webpack build
+*static
+*node_modules
+client/dist
