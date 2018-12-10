@@ -2,9 +2,7 @@ version: "3"
 services:
   db:
     image: postgres
-    # TODO
     restart: on_failure
-    # TODO
     environment:
       POSTGRES_USER: 'conjugaciones-user'
       POSTGRES_PASSWORD: 'PASSWORD'
@@ -14,25 +12,19 @@ services:
 
   client:
     build: ./client
-    # TODO
     restart: on-failure
-    # ports:
-      # make sure webpack-dev-server uses the --host 0.0.0.0 flag
-      # otherwise Docker maps it some gypsy internal ip, I think
-      # - "9000:9000"
-    # volumes:
-    #   - ./client:/app
-    #   - ./static:/app/dist
+    volumes:
+      - ./client:/app
+      - ./static:/app/dist
 
   backend:
-    # TODO
     build: ./backend
     restart: on-failure
     ports:
-      - "8000:8000"
-    # volumes:
-    #   - ./backend:/app
-    #   - ./static/:/app/static
+      - "80:8000"
+    volumes:
+      - ./backend:/app
+      - ./static/:/app/static
     depends_on:
       - db
       - client
