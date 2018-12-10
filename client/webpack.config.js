@@ -29,13 +29,13 @@ module.exports = {
     plugins: [
         new CleanWebpackPlugin(['dist']),
         new HtmlWebpackPlugin({
-            'title': 'Basic Webpack Hot Reloading Setup',
+            'title': 'Entendió',
             'hash': true,
             'template': './src/index.html'
         })
     ],
     output: {
-        filename: 'static/[name].bundle.js',
+        filename: '[name].bundle.js',
         path: path.resolve(__dirname, 'dist')
     }
 };

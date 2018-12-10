@@ -48,7 +48,7 @@ export default class VerbContainer extends Component {
     }
 
     loadVerbs() {
-        fetch(`http://localhost:8000/verbs`).then(resp =>
+        fetch(`http://entend.io/verbs`).then(resp =>
             resp.json().then(rResp =>
                 this.setState({ verbs: rResp, hasLoaded: true }))
         );
