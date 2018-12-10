@@ -1,5 +1,6 @@
-# conjugaciones-backend
+# Conjugaciones
 Serves json responses of Spanish verbs and their conjugations in various tenses and moods.
+React client to consume it
 
 ### Example:
 ```
@@ -40,6 +41,7 @@ Serves json responses of Spanish verbs and their conjugations in various tenses 
     - `export PYTHONPATH=.`
     - `python scripts/verb_csv_importer.py ./verbs.csv`
 1. backend is now served on `localhost:8000`
+1. react dev server is served on `localhost:9000`
 
 
 USE: https://www.randomlists.com/data/spanish-words.json
