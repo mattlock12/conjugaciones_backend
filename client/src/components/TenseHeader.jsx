@@ -1,6 +1,5 @@
 import React from 'react';
 
-
 const INDICATIVE_TENSES = [
     "Presente",
     "Presente - Imperativo",
@@ -13,65 +12,44 @@ const INDICATIVE_TENSES = [
     "Pretérito anterior",
     "Condicional",
     "Condicional perfecto"
-]
+];
 
-export default ({ activeTenses, toggleTense }) => (
-    <>
+
+export default ({activeTenses, toggleTense, moodSuffix=''}) => (
+    <div>
+        <div>{ moodSuffix.length ? 'Subjunctive' : 'Indicative / Imperative' }</div>
         <table>
             <tbody>
                 <tr>
-                    <th>Indicative / Imperative</th>
-                </tr>
-                <tr>
-                    
                     {
-                        INDICATIVE_TENSES.map(it =>
-                            <td 
-                                key={ it }
-                                name={ it }
-                                onClick={ () => toggleTense(it) }
-                                style={{ 
-                                    textAlign: 'center',
-                                    fontSize:  '12px',
-                                    borderRadius: '7px',
-                                    padding: '5px',
-                                    background: activeTenses[it] ? '#4cd0ba' :  'white',
-                                    color: activeTenses[it] ? 'white' : 'black'
-                                }}
-                            >{ it }</td>
-                        )
-                    }
-                </tr>
-                <tr>
-                    <th>Subjunctive</th>
-                </tr>
-                <tr>
-                    
-                {
-                        INDICATIVE_TENSES.map(it => `${it} - Subjuntivo`).map(st =>
-                            st in activeTenses ?
-                                <td 
-                                    key={ st }
-                                    name={ st }
-                                    onClick={ () => toggleTense(st) }
-                                    style={{
-                                        textAlign: 'center',
-                                        fontSize:  '12px',
-                                        padding: '5px',
-                                        borderRadius: '7px',
-                                        background: activeTenses[st] ? '#4cd0ba' :  'white',
-                                        color: activeTenses[st] ? 'white' : 'black'
-                                    }}
-                                >{ st }</td>
-                            :
-                                <td>{ ` ` }</td>
-                        )
+                        INDICATIVE_TENSES.map((t) => {
+                            const tense = `${t}${moodSuffix}`
+                            if (tense in activeTenses) {
+                                return (
+                                    <td 
+                                        key={ tense }
+                                        name={ tense }
+                                        onClick={ () => toggleTense(tense) }
+                                        style={{
+                                            textAlign: 'center',
+                                            fontSize:  '12px',
+                                            padding: '5px',
+                                            borderRadius: '7px',
+                                            background: activeTenses[tense] ? '#4cd0ba' :  'white',
+                                            color: activeTenses[tense] ? 'white' : 'black'
+                                        }}
+                                    >{ tense }</td>
+                                );
+                            } else {
+                                return (
+                                    <td>{ ` ` }</td>
+                                );
+
+                            }
+                        })
                     }
                 </tr>
             </tbody>
         </table>
-    </>
+    </div>
 )
-
-
-

@@ -31,7 +31,7 @@ const checkAnswer = (conjugations, values, form, cb) => {
 };
 
 
-const ConjugationForm = ({ conjugations, verb, tense }) => (
+const ConjugationForm = ({ conjugations, verb, tense, idx }) => (
     <Form
         key={ `${verb.infinitive}${tense}` }
         onSubmit={(values, form, cb) => checkAnswer(conjugations, values, form, cb)}
@@ -54,8 +54,8 @@ const ConjugationForm = ({ conjugations, verb, tense }) => (
                                 >
                                 <label 
                                     style={{ 
-                                        marginRight: '5px',
-                                        width: '30px'
+                                        marginRight: '20px',
+                                        width: '60px'
                                     }}
                                 >{personToLabel[person]}</label>
                                 <Field name={person}>
@@ -68,12 +68,20 @@ const ConjugationForm = ({ conjugations, verb, tense }) => (
                                             <div style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                padding: '4px'
+                                                padding: '4px',
+                                                width: '100%'
                                                 }}
                                             >
-                                                <input {...input} type="text" style={{ height: '20px' }} />
+                                                <input {...input} 
+                                                    type="text" 
+                                                    style={{
+                                                        height: '20px',
+                                                        width: '40%',
+                                                        fontSize: '2.25rem',
+                                                        height: 'auto'
+                                                    }} />
                                                 <p style={{
-                                                    height: '20px',
+                                                    height: 'auto',
                                                     visibility: shouldShow ? 'visible' : 'hidden',
                                                     color: showError ? 'red' : 'green',
                                                     margin: '0px',
@@ -92,8 +100,10 @@ const ConjugationForm = ({ conjugations, verb, tense }) => (
                             width: '100%',
                             border: '1px solid gray',
                             borderRadius: '8px',
-                            fontSize: '16px',
-                            padding: '10px'
+                            fontSize: '24px',
+                            fontWeight: '600',
+                            padding: '20px',
+                            marginTop: '5px'
                         }}
                     >Check</button>
                 </form>

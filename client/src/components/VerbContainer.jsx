@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
+import MediaQuery from 'react-responsive';
 
 import ConjugationForm from './ConjugationForm';
 import TenseHeader from './TenseHeader';
+import TenseHeaderMobile from './TenseHeaderMobile';
+
 
 const DEFAULT_TENSES = {
     "Presente": true, 
@@ -48,7 +51,7 @@ export default class VerbContainer extends Component {
     }
 
     loadVerbs() {
-        fetch(`http://entend.io/verbs`).then(resp =>
+        fetch(`http://localhost:8000/verbs`).then(resp =>
             resp.json().then(rResp =>
                 this.setState({ verbs: rResp, hasLoaded: true }))
         );
@@ -67,24 +70,44 @@ export default class VerbContainer extends Component {
         }
     }
 
-    toggleTense(name) {
-        this.setState((prevState) => {
-            const newState = {
-                tenses: {
-                    ...prevState.tenses,
-                    [name]: !prevState.tenses[name]
-                }
-           }
-           localStorage.setItem(
-               'tenses',
-               JSON.stringify(Object.assign(prevState.tenses, newState.tenses))
-            );
-           return newState;
-        });
+    toggleTense(tenseNames) {
+        if (tenseNames instanceof Array) {
+            this.setState((prevState) => {
+                const tenses = {};
+                tenseNames.forEach(activeTense => tenses[activeTense.value] = !prevState.tenses[activeTense.value]);
+    
+                const newState = {
+                    tenses: {
+                        ...prevState.tenses,
+                        ...Object.assign(prevState.tenses, tenses)
+                    }
+               }
+               localStorage.setItem(
+                   'tenses',
+                   JSON.stringify(Object.assign(prevState.tenses, newState.tenses))
+                );
+               return newState;
+            });
+            
+        } else {
+            this.setState((prevState) => {
+                const newState = {
+                    tenses: {
+                        ...prevState.tenses,
+                        [tenseNames]: !prevState.tenses[tenseNames]
+                    }
+               }
+               localStorage.setItem(
+                   'tenses',
+                   JSON.stringify(Object.assign(prevState.tenses, newState.tenses))
+                );
+               return newState;
+            });
+        }
     }
 
     submitVerbs(values) {
-        this.setState({ formValuess: values });
+        this.setState({ formValues: values });
     }
 
     render() {
@@ -92,16 +115,24 @@ export default class VerbContainer extends Component {
         const verb = verbs[idx];
 
         return (
-            <div style={{ width: '100%' }}>
-                <div style={{ display: 'flex' }}>
-                    <TenseHeader activeTenses={ tenses } toggleTense={ this._toggleTense } />
+            <div style={{ paddingLeft: '50px', paddingRight: '50px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <MediaQuery query="(max-device-width: 900px)">
+                        <TenseHeaderMobile activeTenses={ tenses } toggleTense={ this._toggleTense} />
+                        <TenseHeaderMobile activeTenses={ tenses } toggleTense={ this._toggleTense} moodSuffix=' - Subjuntivo' />
+                    </MediaQuery>
+                    <MediaQuery query="(min-device-width: 901px)">
+                        <TenseHeader activeTenses={ tenses } toggleTense={ this._toggleTense} />
+                        <TenseHeader activeTenses={ tenses } toggleTense={ this._toggleTense} moodSuffix=' - Subjuntivo' />
+                    </MediaQuery>
+                    
                 </div>
                 { 
                     !hasLoaded ? 
                     <h1>Loading Some Verbs</h1> : 
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <h1>{ verb.infinitive }</h1>
+                            <h1 style={{ fontSize: '48px' }}>{ verb.infinitive }</h1>
                             <p
                                 style={{ 
                                     marginLeft: '20px',
@@ -109,35 +140,42 @@ export default class VerbContainer extends Component {
                             >({ verb.infinitiveEnglish })</p>
                             <p 
                                 style={{ 
-                                    marginLeft: '20px',
+                                    marginLeft: '50px',
+                                    fontSize: '24px',
                                     border: '1px solid gray',
-                                    borderRadius: '8px',
-                                    padding: '7px'
+                                    borderRadius: '10px',
+                                    padding: '18px',
+                                    width: '150px',
+                                    textAlign: 'center'
                                 }}
                                 onClick={ this._nextVerb }>next >></p>
                         </div>
-                        <div style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
                         {
-                            Object.keys(tenses).filter(t => tenses[t]).map(tense => (
+                            Object.keys(tenses).filter(t => tenses[t]).map((tense, idx) => (
                                 <div 
                                     key={`${tense}${verbs[idx]}`} 
                                     style={{ 
+                                        width: '80%',
+                                        fontSize: '2.25rem',
                                         margin: '20px',
                                         marginTop: '0px',
                                         border: '1px solid #aaa',
                                         borderRadius: '8px',
                                         padding: '15px'
                                     }}
+                                    className="cf-holder"
                                 >
                                     <div 
                                         style={{ 
-                                            fontSize: '18px',
+                                            fontSize: '28px',
                                             fontWeight: '600',
                                             marginBottom: '7px'
                                         }}
                                         key={ `${tense}tense` }
                                     >{tense}</div>
                                     <ConjugationForm
+                                        idx={ idx }
                                         key={ `${tense}CF` }
                                         verb={ verbs[idx] }
                                         tense={ tense }
