@@ -44,9 +44,6 @@ React client to consume it
     - `export PYTHONPATH=.`
     - `python scripts/verb_csv_importer.py ./verbs.csv`
 1. backend is now served on `localhost:8000`
-1. Navigate to the client folder in a separate window
-1. `yarn install`
-1. `yarn run build`
 1. react dev server is served on `localhost:9000`
 
 
