@@ -1,4 +1,5 @@
 import React from 'react';
+import styled from 'styled-components';
 
 const INDICATIVE_TENSES = [
     "Presente",
@@ -14,6 +15,15 @@ const INDICATIVE_TENSES = [
     "Condicional perfecto"
 ];
 
+const Tense = styled.td`
+    text-align: center;
+    font-size:  12px;
+    padding: 5px;
+    border-radius: 7px;
+    background: ${props => props.active ? '#4cd0ba' :  'white'};
+    color: ${props => props.active ? 'white' : 'black' };
+`
+
 
 export default ({activeTenses, toggleTense, moodSuffix=''}) => (
     <div>
@@ -26,19 +36,12 @@ export default ({activeTenses, toggleTense, moodSuffix=''}) => (
                             const tense = `${t}${moodSuffix}`
                             if (tense in activeTenses) {
                                 return (
-                                    <td 
+                                    <Tense 
                                         key={ tense }
                                         name={ tense }
+                                        active={ activeTenses[tense] }
                                         onClick={ () => toggleTense(tense) }
-                                        style={{
-                                            textAlign: 'center',
-                                            fontSize:  '12px',
-                                            padding: '5px',
-                                            borderRadius: '7px',
-                                            background: activeTenses[tense] ? '#4cd0ba' :  'white',
-                                            color: activeTenses[tense] ? 'white' : 'black'
-                                        }}
-                                    >{ tense }</td>
+                                    >{ tense }</Tense>
                                 );
                             } else {
                                 return (

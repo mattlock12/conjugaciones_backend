@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import MediaQuery from 'react-responsive';
+import styled from 'styled-components';
 
 import ConjugationForm from './ConjugationForm';
 import TenseHeader from './TenseHeader';
@@ -26,6 +27,58 @@ const DEFAULT_TENSES = {
     "Pluscuamperfecto - Subjuntivo": false, 
     "Imperfecto - Subjuntivo": false, 
 }
+
+const StyledContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  overflow: scroll;
+  padding: 0 50px;
+`
+
+const TenseHeaderContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`
+
+const StyledVerbContainer = styled.div`
+  display: flex;
+  align-items: center;
+
+  #infinitive {
+    font-size: 48px;
+  }
+
+  #infinitive-english {
+    margin-left: 20px;
+  }
+
+  #next-button {
+    margin-left: 50px;
+    font-size: 24px;
+    border: 1px solid gray;
+    border-radius: 10px;
+    padding: 18px;
+    width: 150px;
+    text-align: center;
+  }
+`
+
+const ConjugationFormHolder = styled.div`
+  width: 80%;
+  font-size: 2.25rem;
+  margin: 20px;
+  margin-top: 0px;
+  border: 1px solid #aaa;
+  border-radius: 8px;
+  padding: 15px;
+`
+
+const ConjugationTense = styled.div`
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 7px;
+`
+
 
 
 export default class VerbContainer extends Component {
@@ -109,12 +162,10 @@ export default class VerbContainer extends Component {
     render() {
         const { hasLoaded, tenses, verbs, idx } = this.state;
         const verb = verbs[idx];
-        const subjunctiveTenses = Object.keys(tenses).filter(t => t.endsWith('Subjuntivo'));
-        const indicativeTenses = Object.keys(tenses).filter(t => !t.endsWith('Subjuntivo'));
 
         return (
-            <div style={{ paddingLeft: '50px', paddingRight: '50px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <StyledContainer>
+                <TenseHeaderContainer>
                     <MediaQuery query="(max-device-width: 900px)">
                         <TenseHeaderMobile 
                             activeTenses={ tenses }
@@ -135,68 +186,39 @@ export default class VerbContainer extends Component {
                         />
                     </MediaQuery>
                     
-                </div>
+                </TenseHeaderContainer>
                 { 
                     !hasLoaded ? 
                     <h1>Loading Some Verbs</h1> : 
                     <div>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <h1 style={{ fontSize: '48px' }}>{ verb.infinitive }</h1>
-                            <p
-                                style={{ 
-                                    marginLeft: '20px',
-                                }}
-                            >({ verb.infinitiveEnglish })</p>
-                            <p 
-                                style={{ 
-                                    marginLeft: '50px',
-                                    fontSize: '24px',
-                                    border: '1px solid gray',
-                                    borderRadius: '10px',
-                                    padding: '18px',
-                                    width: '150px',
-                                    textAlign: 'center'
-                                }}
-                                onClick={ this._nextVerb }>next >></p>
-                        </div>
+                        <StyledVerbContainer>
+                            <h1 id='infinitive'>{ verb.infinitive }</h1>
+                            <p id='infinitive-english'>({ verb.infinitiveEnglish })</p>
+                            <p id='next-button' onClick={ this._nextVerb }>next >></p>
+                        </StyledVerbContainer>
                         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
                         {
                             Object.keys(tenses).filter(t => tenses[t]).map((tense, idx) => (
-                                <div 
-                                    key={`${tense}${verbs[idx]}`} 
-                                    style={{ 
-                                        width: '80%',
-                                        fontSize: '2.25rem',
-                                        margin: '20px',
-                                        marginTop: '0px',
-                                        border: '1px solid #aaa',
-                                        borderRadius: '8px',
-                                        padding: '15px'
-                                    }}
-                                    className="cf-holder"
-                                >
-                                    <div 
-                                        style={{ 
-                                            fontSize: '28px',
-                                            fontWeight: '600',
-                                            marginBottom: '7px'
-                                        }}
-                                        key={ `${tense}tense` }
-                                    >{tense}</div>
+                                <ConjugationFormHolder key={`${tense}${verbs[idx]}`} >
+                                    <ConjugationTense key={`${tense}tense`}>{tense}</ConjugationTense>
                                     <ConjugationForm
                                         idx={ idx }
                                         key={ `${tense}CF` }
                                         verb={ verbs[idx] }
                                         tense={ tense }
-                                        conjugations={ verbs[idx].conjugations.find(v => v.tense.toLowerCase() == tense.toLowerCase()) || {} } 
+                                        conjugations={ 
+                                          verbs[idx].conjugations.find(v => 
+                                            v.tense.toLowerCase() == tense.toLowerCase()
+                                          ) || {} 
+                                        } 
                                     />
-                                </div>
+                                </ConjugationFormHolder>
                             ))
                         }
                         </div>
                     </div>
                 }
-            </div>
+            </StyledContainer>
         );
     }
 }
