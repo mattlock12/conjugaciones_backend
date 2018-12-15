@@ -16,14 +16,30 @@ const INDICATIVE_TENSES = [
     "Condicional perfecto"
 ];
 
-export default ({activeTenses, toggleTense, moodSuffix=''}) => (
+
+const customStyles = {
+    option: (provided, state) => ({
+      ...provided,
+      background: state.isSelected ? '#4cd0ba' : 'white',
+      color: state.isSelected ? 'white' : 'black'
+    }),
+};
+
+export default ({activeTenses, toggleTense, tenseOptions, moodSuffix=''}) => (
     <div>
         <Select
             value={moodSuffix.length ? 'Subjunctive' : 'Indicative / Imperative'}
             onChange={toggleTense}
             isMulti={true}
+            hideSelectedOptions={false}
+            styles={customStyles}
+            value={ 
+                Object.keys(activeTenses)
+                .filter(at => activeTenses[at] && tenseOptions.indexOf(at) != -1)
+                .map(t => ({ value: t, label: t}))
+            }
             placeholder={moodSuffix.length ? 'Subjunctive' : 'Indicative / Imperative'}
-            options={INDICATIVE_TENSES.map(t => ({ value: `${t}${moodSuffix}`, label: `${t}${moodSuffix}` }))}
+            options={tenseOptions.map(to => ({value: to, label: to}))}
         />
     </div>
 )

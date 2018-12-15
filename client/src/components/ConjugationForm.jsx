@@ -1,16 +1,51 @@
 import React, { Component } from 'react';
 import { Form, Field } from 'react-final-form'
-import { __metadata } from 'tslib';
-import { redBright } from 'ansi-colors';
+import styled from 'styled-components';
 
-/**
- * "form1s"
-"form2s"
-"form3s"
-"form1p"
-"form2p"
-"form3p"
- */
+const FormLine = styled.div`
+    align-ttems: center;
+    display: flex;
+    width: 100%;
+    visibility: ${props => props.visibility ? 'visible' : 'hidden'}
+`
+
+const PersonLabel = styled.label`
+    margin-right: 20px;
+    width: 60px;
+`
+
+const InputContainer = styled.div`
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    width: 100%;
+`
+
+const FormInput = styled.input`
+    height: 20px;
+    width: 40%;
+    font-size: 2.25rem;
+    height: auto;
+`
+
+const Answer = styled.p`
+    height: auto;
+    visibility: ${props => props.shouldShow ? 'visible' : 'hidden'};
+    color: ${props => props.showError ? 'red' : 'green'};
+    margin: 0px;
+    margin-left: 7px;
+`
+
+const CheckButton = styled.button`
+    width: 100%;
+    border: 1px solid gray;
+    border-radius: 8px;
+    font-size: 24px;
+    font-weight: 600;
+    padding: 20px;
+    margin-top: 5px;
+`
+
 const personToLabel = {
     form1s: 'yo',
     form2s: 'tu',
@@ -41,23 +76,13 @@ const ConjugationForm = ({ conjugations, verb, tense, idx }) => (
                     {
                         Object.keys(conjugations).map(person => (
                             personToLabel[person] &&
-                            <div 
+                            <FormLine 
                                 key={person} 
-                                style={{ 
-                                    alignItems: 'center',
-                                    display: 'flex',
-                                    width: '100%',
-                                    visibility: tense.includes('Imperativo') && ['form1s', 'form1p'].includes(person) || !conjugations[person]
-                                        ? 'hidden' 
-                                        : 'visible'
-                                    }}
+                                visibility={
+                                    !(tense.includes('Imperativo') && ['form1s', 'form1p'].includes(person) || !conjugations[person])
+                                }
                                 >
-                                <label 
-                                    style={{ 
-                                        marginRight: '20px',
-                                        width: '60px'
-                                    }}
-                                >{personToLabel[person]}</label>
+                                <PersonLabel>{personToLabel[person]}</PersonLabel>
                                 <Field name={person}>
                                     {({ input, meta }) => {
                                         const hasSubmitted = meta.submitFailed || meta.submitSucceeded;
@@ -65,47 +90,21 @@ const ConjugationForm = ({ conjugations, verb, tense, idx }) => (
                                         const shouldShow = meta.dirtySinceLastSubmit ? false : wasAttempted;
                                         const showError = meta.submitError && wasAttempted;
                                         return (
-                                            <div style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                padding: '4px',
-                                                width: '100%'
-                                                }}
-                                            >
-                                                <input {...input} 
-                                                    type="text" 
-                                                    style={{
-                                                        height: '20px',
-                                                        width: '40%',
-                                                        fontSize: '2.25rem',
-                                                        height: 'auto'
-                                                    }} />
-                                                <p style={{
-                                                    height: 'auto',
-                                                    visibility: shouldShow ? 'visible' : 'hidden',
-                                                    color: showError ? 'red' : 'green',
-                                                    margin: '0px',
-                                                    marginLeft: '7px'
-                                                }}>{conjugations[person]}</p>
-                                            </div>
+                                            <InputContainer>
+                                                <FormInput {...input} type="text" />
+                                                <Answer 
+                                                    shouldShow={shouldShow}
+                                                    showError={showError}
+                                                >{conjugations[person]}
+                                                </Answer>
+                                            </InputContainer>
                                         );  
                                     }}
                                 </Field>
-                            </div>
+                            </FormLine>
                         ))
                     }
-                    <button 
-                        type="submit"
-                        style={{
-                            width: '100%',
-                            border: '1px solid gray',
-                            borderRadius: '8px',
-                            fontSize: '24px',
-                            fontWeight: '600',
-                            padding: '20px',
-                            marginTop: '5px'
-                        }}
-                    >Check</button>
+                    <CheckButton>Check</CheckButton>
                 </form>
             )
         }

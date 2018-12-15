@@ -72,19 +72,15 @@ export default class VerbContainer extends Component {
 
     toggleTense(tenseNames) {
         if (tenseNames instanceof Array) {
+          // from the mobile select dropdown
             this.setState((prevState) => {
                 const tenses = {};
-                tenseNames.forEach(activeTense => tenses[activeTense.value] = !prevState.tenses[activeTense.value]);
-    
-                const newState = {
-                    tenses: {
-                        ...prevState.tenses,
-                        ...Object.assign(prevState.tenses, tenses)
-                    }
-               }
+                Object.keys(prevState.tenses).forEach(t => (tenses[t] = false));
+                tenseNames.forEach(t => tenses[t.value] = true);
+                const newState = { tenses };
                localStorage.setItem(
                    'tenses',
-                   JSON.stringify(Object.assign(prevState.tenses, newState.tenses))
+                   JSON.stringify(tenses)
                 );
                return newState;
             });
@@ -113,17 +109,30 @@ export default class VerbContainer extends Component {
     render() {
         const { hasLoaded, tenses, verbs, idx } = this.state;
         const verb = verbs[idx];
+        const subjunctiveTenses = Object.keys(tenses).filter(t => t.endsWith('Subjuntivo'));
+        const indicativeTenses = Object.keys(tenses).filter(t => !t.endsWith('Subjuntivo'));
 
         return (
             <div style={{ paddingLeft: '50px', paddingRight: '50px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <MediaQuery query="(max-device-width: 900px)">
-                        <TenseHeaderMobile activeTenses={ tenses } toggleTense={ this._toggleTense} />
-                        <TenseHeaderMobile activeTenses={ tenses } toggleTense={ this._toggleTense} moodSuffix=' - Subjuntivo' />
+                        <TenseHeaderMobile 
+                            activeTenses={ tenses }
+                            title={ 'Tense/Mood'}
+                            tenseOptions={ Object.keys(tenses) }
+                            toggleTense={ this._toggleTense}
+                        />
                     </MediaQuery>
                     <MediaQuery query="(min-device-width: 901px)">
-                        <TenseHeader activeTenses={ tenses } toggleTense={ this._toggleTense} />
-                        <TenseHeader activeTenses={ tenses } toggleTense={ this._toggleTense} moodSuffix=' - Subjuntivo' />
+                        <TenseHeader 
+                            activeTenses={ tenses }
+                            toggleTense={ this._toggleTense}
+                        />
+                        <TenseHeader 
+                            activeTenses={ tenses }
+                            moodSuffix={' - Subjuntivo'}
+                            toggleTense={ this._toggleTense}
+                        />
                     </MediaQuery>
                     
                 </div>
