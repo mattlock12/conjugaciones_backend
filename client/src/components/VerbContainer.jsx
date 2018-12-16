@@ -126,16 +126,11 @@ export default class VerbContainer extends Component {
   constructor(props) {
     super(props);
 
-    let savedTenses = JSON.parse(localStorage.getItem('tenses'));
-    if (savedTenses == undefined) {
-      savedTenses = {};
-    }
-    const tenses = Object.assign(DEFAULT_TENSES, savedTenses);
-
+    const savedTenses = JSON.parse(localStorage.getItem('tenses')) || {};
     this.state = {
       verbs: [],
       idx: 0,
-      tenses,
+      tenses: Object.assign(DEFAULT_TENSES, savedTenses),
       hasLoaded: false
     }
 
