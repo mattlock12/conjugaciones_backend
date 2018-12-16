@@ -1,31 +1,45 @@
 import React, { Component } from 'react';
 import { Form, Field } from 'react-final-form'
+import MediaQuery from 'react-responsive';
 import styled from 'styled-components';
 
 const FormLine = styled.div`
-    align-ttems: center;
+    align-items: center;
     display: flex;
     width: 100%;
-    visibility: ${props => props.visibility ? 'visible' : 'hidden'}
+    shouldShow: ${props => props.visibility ? 'visible' : 'hidden'}
 `
 
 const PersonLabel = styled.label`
     margin-right: 20px;
     width: 60px;
+
+    @media (max-width: 900px) {
+        margin-right: 0px;
+        width: 40px;
+        font-weight: 400;
+    }
 `
 
 const InputContainer = styled.div`
     display: flex;
     align-items: center;
     padding: 4px;
-    width: 100%;
+    width: 100%
 `
 
 const FormInput = styled.input`
     height: 20px;
     width: 40%;
-    font-size: 2.25rem;
-    height: auto;
+    font-size: 1rem;
+    padding-left: 5px;
+
+    @media (max-width: 900px) {
+        height: 30px;
+        width: 50%;
+        border: 1px solid #c0c5d4;
+        border-radius: 8px;
+    }
 `
 
 const Answer = styled.p`
@@ -78,7 +92,7 @@ const ConjugationForm = ({ conjugations, verb, tense, idx }) => (
                             personToLabel[person] &&
                             <FormLine 
                                 key={person} 
-                                visibility={
+                                shouldShow={
                                     !(tense.includes('Imperativo') && ['form1s', 'form1p'].includes(person) || !conjugations[person])
                                 }
                                 >

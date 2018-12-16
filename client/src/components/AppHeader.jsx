@@ -6,6 +6,10 @@ const AppHeader = styled.div`
     align-items: center;
     padding-left: 50px;
 
+    @media (max-width: 900px) {
+        padding-left: 20px;
+    }
+
     .describer {
         padding-left: 30px;
         font-size: 12px;

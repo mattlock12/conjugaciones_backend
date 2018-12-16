@@ -33,6 +33,10 @@ const StyledContainer = styled.div`
   height: 100%;
   overflow: scroll;
   padding: 0 50px;
+
+  @media (max-width: 900px) {
+    padding: 0 20px;
+  }
 `
 
 const TenseHeaderContainer = styled.div`
@@ -43,12 +47,20 @@ const TenseHeaderContainer = styled.div`
 const StyledVerbContainer = styled.div`
   display: flex;
   align-items: center;
+  margin: 10px 0;
 
-  #infinitive {
-    font-size: 48px;
+  #infinitive-organizer {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
   }
 
-  #infinitive-english {
+  #infinitive {
+    font-weight: 600;
+    font-size: 36px;
+  }
+
+   #infinitive-english {
     margin-left: 20px;
   }
 
@@ -57,24 +69,55 @@ const StyledVerbContainer = styled.div`
     font-size: 24px;
     border: 1px solid gray;
     border-radius: 10px;
-    padding: 18px;
+    padding: 8px;
     width: 150px;
     text-align: center;
   }
+
+  @media (max-width: 900px) {
+    #infinitive-organizer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    #infinitive {
+      font-size: 28px;
+    }
+
+    #infinitive-english {
+      margin-left: 0;
+      font-size: .8rem;
+    }
+
+    #next-button {
+      width: 100px;
+    }
+  }
+`
+
+const ConjugationFormList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
 `
 
 const ConjugationFormHolder = styled.div`
-  width: 80%;
-  font-size: 2.25rem;
   margin: 20px;
   margin-top: 0px;
   border: 1px solid #aaa;
   border-radius: 8px;
   padding: 15px;
+  font-size: 1rem;
+
+  @media (max-width: 900px) {
+    margin: 0;
+    font-size: 1rem;
+    width: 100%;
+  }
 `
 
 const ConjugationTense = styled.div`
-  font-size: 28px;
+  font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 7px;
 `
@@ -192,17 +235,19 @@ export default class VerbContainer extends Component {
                     <h1>Loading Some Verbs</h1> : 
                     <div>
                         <StyledVerbContainer>
-                            <h1 id='infinitive'>{ verb.infinitive }</h1>
-                            <p id='infinitive-english'>({ verb.infinitiveEnglish })</p>
-                            <p id='next-button' onClick={ this._nextVerb }>next >></p>
+                            <div id='infinitive-organizer'>
+                              <div id='infinitive'>{ verb.infinitive }</div>
+                              <div id='infinitive-english'>({ verb.infinitiveEnglish })</div>
+                            </div>
+                            <div id='next-button' onClick={ this._nextVerb }>next >></div>
                         </StyledVerbContainer>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        <ConjugationFormList>
                         {
-                            Object.keys(tenses).filter(t => tenses[t]).map((tense, idx) => (
+                            Object.keys(tenses).filter(t => tenses[t]).map((tense, tIdx) => (
                                 <ConjugationFormHolder key={`${tense}${verbs[idx]}`} >
                                     <ConjugationTense key={`${tense}tense`}>{tense}</ConjugationTense>
                                     <ConjugationForm
-                                        idx={ idx }
+                                        idx={ tIdx }
                                         key={ `${tense}CF` }
                                         verb={ verbs[idx] }
                                         tense={ tense }
@@ -215,7 +260,7 @@ export default class VerbContainer extends Component {
                                 </ConjugationFormHolder>
                             ))
                         }
-                        </div>
+                        </ConjugationFormList>
                     </div>
                 }
             </StyledContainer>
