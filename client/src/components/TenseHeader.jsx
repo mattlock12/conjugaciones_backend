@@ -1,4 +1,5 @@
 import React from 'react';
+import styled from 'styled-components';
 
 const INDICATIVE_TENSES = [
   "Presente",
@@ -12,85 +13,46 @@ const INDICATIVE_TENSES = [
   "Pretérito anterior",
   "Condicional",
   "Condicional perfecto"
-]
+];
 
-export default class TenseHeader extends React.Component {
-  render() {
-    const { activeTenses, toggleTense } = this.props;
+const Tense = styled.td`
+  text-align: center;
+  font-size:  12px;
+  padding: 5px;
+  border-radius: 7px;
+  background: ${props => props.active ? '#4cd0ba' :  'white'};
+  color: ${props => props.active ? 'white' : 'black' };
+`
 
-    return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
-        <div>
-          <div>Indicative / Imperative</div>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              flexWrap: 'wrap'
-            }}
-          >
+
+export default ({activeTenses, toggleTense, moodSuffix=''}) => (
+  <div>
+    <div>{ moodSuffix.length ? 'Subjunctive' : 'Indicative / Imperative' }</div>
+    <table>
+      <tbody>
+        <tr>
           {
-            INDICATIVE_TENSES.map(it =>
-            <div
-              key={it}
-              name={it}
-              onClick={() => toggleTense(it)}
-              style={{
-                background: activeTenses[it] ? '#4cd0ba' :  'white',
-                borderRadius: '7px',
-                color: activeTenses[it] ? 'white' : 'black',
-                cursor: 'pointer',
-                fontSize:  '12px',
-                padding: '5px',
-                textAlign: 'center'
-              }}
-            >
-              {it}
-            </div>
-            )
+            INDICATIVE_TENSES.map((t) => {
+              const tense = `${t}${moodSuffix}`
+              if (tense in activeTenses) {
+                return (
+                  <Tense 
+                    key={ tense }
+                    name={ tense }
+                    active={ activeTenses[tense] }
+                    onClick={ () => toggleTense(tense) }
+                  >{ tense }</Tense>
+                );
+              } else {
+                return (
+                  <td>{ ` ` }</td>
+                );
+
+              }
+            })
           }
-          </div>
-        </div>
-        <div>
-          <div>Subjunctive</div>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              flexWrap: 'wrap'
-            }}
-          >
-          {
-            INDICATIVE_TENSES.map(it => `${it} - Subjuntivo`).map(st =>
-            st in activeTenses ?
-              <div
-                key={st}
-                name={st}
-                onClick={() => toggleTense(st)}
-                style={{
-                  background: activeTenses[st] ? '#4cd0ba' :  'white',
-                  borderRadius: '7px',
-                  color: activeTenses[st] ? 'white' : 'black',
-                  cursor: 'pointer',
-                  fontSize:  '12px',
-                  padding: '5px',
-                  textAlign: 'center'
-                }}
-              >
-              {st}
-              </div>
-            :
-              <div key={ st }>{` `}</div>
-            )
-          }
-          </div>
-        </div>
-      </div>
-    )
-  }
-}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+)

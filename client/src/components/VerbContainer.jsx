@@ -1,29 +1,126 @@
 import React, { Component } from 'react';
+import MediaQuery from 'react-responsive';
+import styled from 'styled-components';
 
 import ConjugationForm from './ConjugationForm';
 import TenseHeader from './TenseHeader';
+import TenseHeaderMobile from './TenseHeaderMobile';
+
 
 const DEFAULT_TENSES = {
-  "Presente": true,
-  "Presente - Imperativo": false,
-  "Presente perfecto": false,
-  "Pretérito": true,
+  "Presente": true, 
+  "Presente - Imperativo": false, 
+  "Presente perfecto": false, 
+  "Pretérito": true, 
   "Futuro": true,
-  "Futuro perfecto": false,
-  "Pluscuamperfecto": false,
-  "Imperfecto": false,
-  "Pretérito anterior": false,
+  "Futuro perfecto": false, 
+  "Pluscuamperfecto": false, 
+  "Imperfecto": false, 
+  "Pretérito anterior": false, 
   "Condicional": false,
-  "Condicional perfecto": false,
+  "Condicional perfecto": false, 
   // subjunctive
-  "Presente - Subjuntivo": false,
-  "Presente perfecto - Subjuntivo": false,
+  "Presente - Subjuntivo": false, 
+  "Presente perfecto - Subjuntivo": false, 
   "Futuro - Subjuntivo": false,
   "Futuro perfecto - Subjuntivo": false,
-  "Pluscuamperfecto - Subjuntivo": false,
-  "Imperfecto - Subjuntivo": false,
+  "Pluscuamperfecto - Subjuntivo": false, 
+  "Imperfecto - Subjuntivo": false, 
 }
 
+const StyledContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  overflow: scroll;
+  padding: 0 50px;
+
+  @media (max-width: 900px) {
+    padding: 0 20px;
+  }
+`
+
+const TenseHeaderContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`
+
+const StyledVerbContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+
+  #infinitive-organizer {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+  }
+
+  #infinitive {
+    font-weight: 600;
+    font-size: 36px;
+  }
+
+  #infinitive-english {
+    margin-left: 20px;
+  }
+
+  #next-button {
+    margin-left: 50px;
+    font-size: 24px;
+    border: 1px solid gray;
+    border-radius: 10px;
+    padding: 8px;
+    width: 150px;
+    text-align: center;
+  }
+
+  @media (max-width: 900px) {
+    #infinitive-organizer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    #infinitive {
+      font-size: 28px;
+    }
+
+    #infinitive-english {
+      margin-left: 0;
+      font-size: .8rem;
+    }
+
+    #next-button {
+      width: 100px;
+    }
+  }
+`
+
+const ConjugationFormList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+`
+
+const ConjugationFormHolder = styled.div`
+  margin: 20px;
+  margin-top: 0px;
+  border: 1px solid #aaa;
+  border-radius: 8px;
+  padding: 15px;
+  font-size: 1rem;
+
+  @media (max-width: 900px) {
+    margin: 0;
+    font-size: 1rem;
+    width: 100%;
+  }
+`
+
+const ConjugationTense = styled.div`
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 7px;
+`
 
 export default class VerbContainer extends Component {
   constructor(props) {
@@ -31,10 +128,10 @@ export default class VerbContainer extends Component {
 
     const savedTenses = JSON.parse(localStorage.getItem('tenses')) || {};
     this.state = {
-      hasLoaded: false,
+      verbs: [],
       idx: 0,
       tenses: Object.assign(DEFAULT_TENSES, savedTenses),
-      verbs: []
+      hasLoaded: false
     }
 
     this._loadVerbs = this.loadVerbs.bind(this);
@@ -43,9 +140,10 @@ export default class VerbContainer extends Component {
   }
 
   loadVerbs() {
-    fetch(`http://entend.io/verbs`).then(resp =>
+    const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost:8000';
+    fetch(`http://${verbsUrl}/verbs`).then(resp =>
       resp.json().then(rResp =>
-      this.setState({ verbs: rResp, hasLoaded: true }))
+        this.setState({ verbs: rResp, hasLoaded: true }))
     );
   }
 
@@ -62,24 +160,40 @@ export default class VerbContainer extends Component {
     }
   }
 
-  toggleTense(name) {
-    this.setState((prevState) => {
-      const newState = {
-        tenses: {
-          ...prevState.tenses,
-          [name]: !prevState.tenses[name]
-        }
-      }
-      localStorage.setItem(
-        'tenses',
-        JSON.stringify(Object.assign(prevState.tenses, newState.tenses))
-      );
-      return newState;
-    });
+  toggleTense(tenseNames) {
+    if (tenseNames instanceof Array) {
+      // from the mobile select dropdown
+      this.setState((prevState) => {
+        const tenses = {};
+        Object.keys(prevState.tenses).forEach(t => (tenses[t] = false));
+        tenseNames.forEach(t => tenses[t.value] = true);
+        const newState = { tenses };
+         localStorage.setItem(
+           'tenses',
+           JSON.stringify(tenses)
+        );
+         return newState;
+      });
+      
+    } else {
+      this.setState((prevState) => {
+        const newState = {
+          tenses: {
+            ...prevState.tenses,
+            [tenseNames]: !prevState.tenses[tenseNames]
+          }
+         }
+         localStorage.setItem(
+           'tenses',
+           JSON.stringify({...prevState.tenses, ...newState.tenses})
+        );
+         return newState;
+      });
+    }
   }
 
-  submitVerbs(formValues) {
-    this.setState({ formValuess });
+  submitVerbs(values) {
+    this.setState({ formValues: values });
   }
 
   render() {
@@ -87,64 +201,63 @@ export default class VerbContainer extends Component {
     const verb = verbs[idx];
 
     return (
-      <div style={{ width: '100%' }}>
-      <div style={{ display: 'flex' }}>
-        <TenseHeader activeTenses={ tenses } toggleTense={ this._toggleTense } />
-      </div>
-      {
-        !hasLoaded ?
-        <h1>Loading Some Verbs</h1> :
-        <div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <h1>{ verb.infinitive }</h1>
-          <p style={{ marginLeft: '20px' }}>({ verb.infinitiveEnglish })</p>
-          <p
-            style={{
-              border: '1px solid gray',
-              borderRadius: '8px',
-              marginLeft: '20px',
-              padding: '7px'
-            }}
-            onClick={this._nextVerb}
-          >next >></p>
-        </div>
-        <div style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
-          {
-            Object.keys(tenses).filter(t => tenses[t]).map(tense => (
-              <div
-                key={`${tense}${verbs[idx]}`}
-                style={{
-                  margin: '20px',
-                  marginTop: '0px',
-                  border: '1px solid #aaa',
-                  borderRadius: '8px',
-                  padding: '15px'
-                }}
-              >
-              <div
-                key={`${tense}tense`}
-                style={{
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  marginBottom: '7px'
-                }}
-              >{tense}</div>
-              <ConjugationForm
-                conjugations={
-                  verbs[idx].conjugations.find(
-                    v => v.tense.toLowerCase() == tense.toLowerCase()) || {} 
-                }
-                key={`${tense}CF`}
-                tense={tense}
-                verb={verbs[idx]}
-              />
+      <StyledContainer>
+        <TenseHeaderContainer>
+          <MediaQuery query="(max-device-width: 900px)">
+            <TenseHeaderMobile 
+              activeTenses={ tenses }
+              title={ 'Tense/Mood'}
+              tenseOptions={ Object.keys(tenses) }
+              toggleTense={ this._toggleTense}
+            />
+          </MediaQuery>
+          <MediaQuery query="(min-device-width: 901px)">
+            <TenseHeader 
+              activeTenses={ tenses }
+              toggleTense={ this._toggleTense}
+            />
+            <TenseHeader 
+              activeTenses={ tenses }
+              moodSuffix={' - Subjuntivo'}
+              toggleTense={ this._toggleTense}
+            />
+          </MediaQuery>
+          
+        </TenseHeaderContainer>
+        { 
+          !hasLoaded ? 
+          <h1>Loading Some Verbs</h1> : 
+          <div>
+            <StyledVerbContainer>
+              <div id='infinitive-organizer'>
+                <div id='infinitive'>{ verb.infinitive }</div>
+                <div id='infinitive-english'>({ verb.infinitiveEnglish })</div>
               </div>
-            ))
-          }
+              <div id='next-button' onClick={ this._nextVerb }>next >></div>
+            </StyledVerbContainer>
+            <ConjugationFormList>
+            {
+              Object.keys(tenses).filter(t => tenses[t]).map((tense, tIdx) => (
+                <ConjugationFormHolder key={`${tense}${verbs[idx]}`} >
+                  <ConjugationTense key={`${tense}tense`}>{tense}</ConjugationTense>
+                  <ConjugationForm
+                    idx={ tIdx }
+                    key={ `${tense}CF` }
+                    verb={ verbs[idx] }
+                    tense={ tense }
+                    conjugations={ 
+                      verbs[idx].conjugations.find(v => 
+                      v.tense.toLowerCase() === tense.toLowerCase()
+                      ) || {} 
+                    } 
+                  />
+                </ConjugationFormHolder>
+              ))
+            }
+            </ConjugationFormList>
           </div>
-        </div>
-      }
-      </div>
+        }
+      </StyledContainer>
     );
   }
 }
