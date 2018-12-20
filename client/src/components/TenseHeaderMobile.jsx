@@ -25,6 +25,7 @@ const customStyles = {
   }),
 };
 
+// TODO: prop-types
 export default ({activeTenses, toggleTense, tenseOptions, moodSuffix=''}) => (
   <div>
     <Select

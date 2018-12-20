@@ -35,7 +35,7 @@ const StyledContainer = styled.div`
   padding: 0 50px;
 
   @media (max-width: 900px) {
-  padding: 0 20px;
+    padding: 0 20px;
   }
 `
 
@@ -50,48 +50,48 @@ const StyledVerbContainer = styled.div`
   margin: 10px 0;
 
   #infinitive-organizer {
-  display: flex;
-  align-items: center;
-  padding: 5px 0;
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
   }
 
   #infinitive {
-  font-weight: 600;
-  font-size: 36px;
-  }
-
-   #infinitive-english {
-  margin-left: 20px;
-  }
-
-  #next-button {
-  margin-left: 50px;
-  font-size: 24px;
-  border: 1px solid gray;
-  border-radius: 10px;
-  padding: 8px;
-  width: 150px;
-  text-align: center;
-  }
-
-  @media (max-width: 900px) {
-  #infinitive-organizer {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  #infinitive {
-    font-size: 28px;
+    font-weight: 600;
+    font-size: 36px;
   }
 
   #infinitive-english {
-    margin-left: 0;
-    font-size: .8rem;
+    margin-left: 20px;
   }
 
   #next-button {
-    width: 100px;
+    margin-left: 50px;
+    font-size: 24px;
+    border: 1px solid gray;
+    border-radius: 10px;
+    padding: 8px;
+    width: 150px;
+    text-align: center;
   }
+
+  @media (max-width: 900px) {
+    #infinitive-organizer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    #infinitive {
+      font-size: 28px;
+    }
+
+    #infinitive-english {
+      margin-left: 0;
+      font-size: .8rem;
+    }
+
+    #next-button {
+      width: 100px;
+    }
   }
 `
 
@@ -110,9 +110,9 @@ const ConjugationFormHolder = styled.div`
   font-size: 1rem;
 
   @media (max-width: 900px) {
-  margin: 0;
-  font-size: 1rem;
-  width: 100%;
+    margin: 0;
+    font-size: 1rem;
+    width: 100%;
   }
 `
 
@@ -140,7 +140,7 @@ export default class VerbContainer extends Component {
   }
 
   loadVerbs() {
-    const verbsUrl = process.env.NODE_ENV == 'production' ? 'entend.io' : 'localhost:8000';
+    const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost:8000';
     fetch(`http://${verbsUrl}/verbs`).then(resp =>
       resp.json().then(rResp =>
         this.setState({ verbs: rResp, hasLoaded: true }))
@@ -185,7 +185,7 @@ export default class VerbContainer extends Component {
          }
          localStorage.setItem(
            'tenses',
-           JSON.stringify(Object.assign(prevState.tenses, newState.tenses))
+           JSON.stringify({...prevState.tenses, ...newState.tenses})
         );
          return newState;
       });
@@ -247,7 +247,7 @@ export default class VerbContainer extends Component {
                     tense={ tense }
                     conjugations={ 
                       verbs[idx].conjugations.find(v => 
-                      v.tense.toLowerCase() == tense.toLowerCase()
+                      v.tense.toLowerCase() === tense.toLowerCase()
                       ) || {} 
                     } 
                   />
