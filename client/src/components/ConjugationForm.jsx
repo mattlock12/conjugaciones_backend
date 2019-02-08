@@ -72,8 +72,7 @@ const personToLabel = {
 const checkAnswer = (conjugations, values, form, cb) => {
   const results = {};
   Object.keys(values).forEach(person => (
-  results[person] = values[person] && conjugations[person].toLowerCase() !== values[person].toLowerCase()
-
+    results[person] = values[person] && conjugations[person].toLowerCase().trim() !== values[person].toLowerCase().trim()
   ))
   cb(results);
 };

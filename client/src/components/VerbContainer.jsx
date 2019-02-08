@@ -247,7 +247,7 @@ export default class VerbContainer extends Component {
                     tense={ tense }
                     conjugations={ 
                       verbs[idx].conjugations.find(v => 
-                      v.tense.toLowerCase() === tense.toLowerCase()
+                        v.tense.toLowerCase() === tense.toLowerCase()
                       ) || {} 
                     } 
                   />
