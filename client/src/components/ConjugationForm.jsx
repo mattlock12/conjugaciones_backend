@@ -6,7 +6,7 @@ const FormLine = styled.div`
   align-items: center;
   display: flex;
   width: 100%;
-  shouldShow: ${props => props.visibility ? 'visible' : 'hidden'}
+  visibility: ${props => props.shouldShow ? 'visible' : 'hidden'}
 `
 
 const PersonLabel = styled.label`
