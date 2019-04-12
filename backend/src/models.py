@@ -24,7 +24,6 @@ class BaseModelMixin(object):
 
 class Verb(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
-    # TODO: add language enum
     language = db.Column(db.Enum(Languages))
     infinitive = db.Column(db.String(128), unique=True, index=True, nullable=False)
     infinitive_english = db.Column(db.String(128), nullable=False)
