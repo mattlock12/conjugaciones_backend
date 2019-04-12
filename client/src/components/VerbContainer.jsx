@@ -197,11 +197,11 @@ export default class VerbContainer extends Component {
     const verb = verbs[idx];
     const moodSuffixesWithTitles = language === 'ES'
       ? [
-        {title: 'Indicativo', suffix: '', tenseFilter: (t) => !t.endsWith('Subjuntivo')},
-        {title: 'Subjuntivo', suffix: ' - Subjuntivo', tenseFilter: (t) => t.endsWith('Subjuntivo')}
+        {title: 'Indicativo', suffix: ''},
+        {title: 'Subjuntivo', suffix: ' - Subjuntivo'}
       ]
       : [
-        {title: 'Tenses', suffix: '', tenseFilter: (t) => t}
+        {title: 'Tenses', suffix: ''}
       ];
 
     return (
