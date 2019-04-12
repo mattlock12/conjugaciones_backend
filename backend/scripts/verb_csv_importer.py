@@ -5,7 +5,7 @@ Then run python scripts/verb_csv_importer <path_to_file>
 import csv
 import sys
 
-from src.constants import EnglishMood
+from src.constants import EnglishMood, Languages
 from src.models import Verb, VerbConjugation
 
 WEIRD_MOODS = [
@@ -40,6 +40,7 @@ def main():
             # need to create the Verb model
             verb = Verb(
                 infinitive=infinitive,
+                language=Languages.ES,
                 infinitive_english=infinitive_english,
                 past_participle=past_participle,
                 gerund=gerund

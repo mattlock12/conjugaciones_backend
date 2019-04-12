@@ -1,0 +1,73 @@
+// Español
+export const PERSON_TO_LABEL_ES = {
+  form1s: 'yo',
+  form2s: 'tu',
+  form3s: 'Ud',
+  form1p: 'nos.',
+  form2p: 'vos.',
+  form3p: 'Uds.' 
+};
+
+
+export const DEFAULT_TENSES_ES = {
+  "Presente": true, 
+  "Presente - Imperativo": false, 
+  "Presente perfecto": false, 
+  "Pretérito": true, 
+  "Futuro": true,
+  "Futuro perfecto": false, 
+  "Pluscuamperfecto": false, 
+  "Imperfecto": false, 
+  "Pretérito anterior": false, 
+  "Condicional": false,
+  "Condicional perfecto": false, 
+  // subjunctive
+  "Presente - Subjuntivo": false, 
+  "Presente perfecto - Subjuntivo": false, 
+  "Futuro - Subjuntivo": false,
+  "Futuro perfecto - Subjuntivo": false,
+  "Pluscuamperfecto - Subjuntivo": false, 
+  "Imperfecto - Subjuntivo": false, 
+}
+
+
+// Italiano
+export const PERSON_TO_LABEL_IT = {
+  form1s: 'io',
+  form2s: 'tu',
+  form3s: 'lui/lei',
+  form1p: 'noi',
+  form2p: 'voi',
+  form3p: 'loro'
+};
+
+
+export const DEFAULT_TENSES_IT = {
+  'PRESENTE': true,
+  'IMPERATIVO': false,
+  'PASSATO PROSSIMO': true,
+  'IMPERFETTO': true,
+  'PASSATO REMOTO': false,
+  'TRAPASSATO PROSSIMO': false,
+  'TRAPASSATO REMOTO': false,
+  'FUTURO SEMPLICE': false,
+  'FUTURO ANTERIORE': false,
+  'PRESENTE CONDIZIONALE': false,
+  'PASSATO CONDIZIONALE': false,
+  'PRESENTE CONGIUNTIVO': false,
+  'PASSATO CONGIUNTIVO': false,
+  'IMPERFETTO CONGIUNTIVO': false,
+  'TRAPASSATO CONGIUNTIVO': false
+};
+
+
+export const LANGUAGE_TO_TENSES = {
+  ES: DEFAULT_TENSES_ES,
+  IT: DEFAULT_TENSES_IT
+};
+
+
+export const LANGUAGE_TO_LABELS = {
+  ES: PERSON_TO_LABEL_ES,
+  IT: PERSON_TO_LABEL_IT
+};

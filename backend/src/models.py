@@ -1,6 +1,7 @@
 from sqlalchemy import UniqueConstraint
 
 from app import db
+from src.constants import Languages
 
 
 class BaseModelMixin(object):
@@ -23,6 +24,7 @@ class BaseModelMixin(object):
 
 class Verb(db.Model, BaseModelMixin):
     id = db.Column(db.Integer, primary_key=True)
+    language = db.Column(db.Enum(Languages))
     infinitive = db.Column(db.String(128), unique=True, index=True, nullable=False)
     infinitive_english = db.Column(db.String(128), nullable=False)
     past_participle = db.Column(db.String(128))
@@ -30,9 +32,10 @@ class Verb(db.Model, BaseModelMixin):
     # TODO: this should not be lazy: rather, there should be another prop that lazily loads
     verb_conjugations = db.relationship('VerbConjugation', backref='verb', lazy='dynamic')
 
-    def __init__(self, infinitive, infinitive_english, past_participle=None, gerund=None):
+    def __init__(self, infinitive, infinitive_english, language, past_participle=None, gerund=None):
         self.infinitive = infinitive
         self.infinitive_english = infinitive_english
+        self.language = language
         self.past_participle = past_participle
         self.gerund = gerund
 

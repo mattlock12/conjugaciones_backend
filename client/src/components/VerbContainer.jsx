@@ -1,32 +1,14 @@
 import React, { Component } from 'react';
 import MediaQuery from 'react-responsive';
 import styled from 'styled-components';
+import { capitalize } from 'lodash';
 
 import ConjugationForm from './ConjugationForm';
 import TenseHeader from './TenseHeader';
 import TenseHeaderMobile from './TenseHeaderMobile';
 
+import { LANGUAGE_TO_TENSES } from '../constants/Constants';
 
-const DEFAULT_TENSES = {
-  "Presente": true, 
-  "Presente - Imperativo": false, 
-  "Presente perfecto": false, 
-  "Pretérito": true, 
-  "Futuro": true,
-  "Futuro perfecto": false, 
-  "Pluscuamperfecto": false, 
-  "Imperfecto": false, 
-  "Pretérito anterior": false, 
-  "Condicional": false,
-  "Condicional perfecto": false, 
-  // subjunctive
-  "Presente - Subjuntivo": false, 
-  "Presente perfecto - Subjuntivo": false, 
-  "Futuro - Subjuntivo": false,
-  "Futuro perfecto - Subjuntivo": false,
-  "Pluscuamperfecto - Subjuntivo": false, 
-  "Imperfecto - Subjuntivo": false, 
-}
 
 const StyledContainer = styled.div`
   width: 100%;
@@ -72,6 +54,13 @@ const StyledVerbContainer = styled.div`
     padding: 8px;
     width: 150px;
     text-align: center;
+
+    &:hover {
+      cursor: pointer;
+      background: blue;
+      color: white;
+      border: white;
+    }
   }
 
   @media (max-width: 900px) {
@@ -126,11 +115,14 @@ export default class VerbContainer extends Component {
   constructor(props) {
     super(props);
 
-    const savedTenses = JSON.parse(localStorage.getItem('tenses')) || {};
+    const { language } = this.props;
+    const savedTenses = JSON.parse(localStorage.getItem(`tenses__${language}`)) || {};
+    const defaultTenses = LANGUAGE_TO_TENSES[language];
+
     this.state = {
       verbs: [],
       idx: 0,
-      tenses: Object.assign(DEFAULT_TENSES, savedTenses),
+      tenses: Object.assign(defaultTenses, savedTenses),
       hasLoaded: false
     }
 
@@ -140,8 +132,9 @@ export default class VerbContainer extends Component {
   }
 
   loadVerbs() {
+    const { language } = this.props;
     const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost:8000';
-    fetch(`http://${verbsUrl}/verbs`).then(resp =>
+    fetch(`http://${verbsUrl}/api/verbs?l=${language}`).then(resp =>
       resp.json().then(rResp =>
         this.setState({ verbs: rResp, hasLoaded: true }))
     );
@@ -161,6 +154,8 @@ export default class VerbContainer extends Component {
   }
 
   toggleTense(tenseNames) {
+    const { language } = this.props;
+
     if (tenseNames instanceof Array) {
       // from the mobile select dropdown
       this.setState((prevState) => {
@@ -169,7 +164,7 @@ export default class VerbContainer extends Component {
         tenseNames.forEach(t => tenses[t.value] = true);
         const newState = { tenses };
          localStorage.setItem(
-           'tenses',
+           `tenses__${language}`,
            JSON.stringify(tenses)
         );
          return newState;
@@ -184,7 +179,7 @@ export default class VerbContainer extends Component {
           }
          }
          localStorage.setItem(
-           'tenses',
+           `tenses__${language}`,
            JSON.stringify({...prevState.tenses, ...newState.tenses})
         );
          return newState;
@@ -197,8 +192,17 @@ export default class VerbContainer extends Component {
   }
 
   render() {
+    const { language } = this.props;
     const { hasLoaded, tenses, verbs, idx } = this.state;
     const verb = verbs[idx];
+    const moodSuffixesWithTitles = language === 'ES'
+      ? [
+        {title: 'Indicativo', suffix: ''},
+        {title: 'Subjuntivo', suffix: ' - Subjuntivo'}
+      ]
+      : [
+        {title: 'Tenses', suffix: ''}
+      ];
 
     return (
       <StyledContainer>
@@ -212,15 +216,16 @@ export default class VerbContainer extends Component {
             />
           </MediaQuery>
           <MediaQuery query="(min-device-width: 901px)">
-            <TenseHeader 
-              activeTenses={ tenses }
-              toggleTense={ this._toggleTense}
+          {
+            moodSuffixesWithTitles.map(moodObj => (
+              <TenseHeader 
+                activeTenses={ tenses }
+                title={moodObj.title}
+                moodSuffix={moodObj.suffix}
+                toggleTense={ this._toggleTense}
             />
-            <TenseHeader 
-              activeTenses={ tenses }
-              moodSuffix={' - Subjuntivo'}
-              toggleTense={ this._toggleTense}
-            />
+            ))
+          }
           </MediaQuery>
           
         </TenseHeaderContainer>
@@ -230,8 +235,8 @@ export default class VerbContainer extends Component {
           <div>
             <StyledVerbContainer>
               <div id='infinitive-organizer'>
-                <div id='infinitive'>{ verb.infinitive }</div>
-                <div id='infinitive-english'>({ verb.infinitiveEnglish })</div>
+                <div id='infinitive'>{ verb.infinitive.toLowerCase() }</div>
+                <div id='infinitive-english'>({ verb.infinitiveEnglish.toLowerCase() })</div>
               </div>
               <div id='next-button' onClick={ this._nextVerb }>next >></div>
             </StyledVerbContainer>
@@ -239,12 +244,13 @@ export default class VerbContainer extends Component {
             {
               Object.keys(tenses).filter(t => tenses[t]).map((tense, tIdx) => (
                 <ConjugationFormHolder key={`${tense}${verbs[idx]}`} >
-                  <ConjugationTense key={`${tense}tense`}>{tense}</ConjugationTense>
+                  <ConjugationTense key={`${tense}tense`}>{capitalize(tense)}</ConjugationTense>
                   <ConjugationForm
                     idx={ tIdx }
                     key={ `${tense}CF` }
                     verb={ verbs[idx] }
                     tense={ tense }
+                    language={language}
                     conjugations={ 
                       verbs[idx].conjugations.find(v => 
                         v.tense.toLowerCase() === tense.toLowerCase()

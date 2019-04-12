@@ -1,6 +1,11 @@
 import enum
 
 
+class Languages(enum.Enum):
+    ES = 'Español'
+    IT = 'Italiano'
+
+
 class EnglishMood(enum.Enum):
     IMPERATIVE_AFFIRMATIVE = 'Imperative Affirmative'
     SUBJUNCTIVE = 'Subjunctive'
