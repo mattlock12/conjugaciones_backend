@@ -1,5 +1,5 @@
 # Conjugaciones
-Serves json responses of Spanish verbs and their conjugations in various tenses and moods.
+Serves json responses of Spanish & Italian verbs and their conjugations in various tenses and moods.
 React client to consume it
 
 ### Example:
@@ -43,6 +43,7 @@ React client to consume it
         - `exit()`
     - `export PYTHONPATH=.`
     - `python scripts/verb_csv_importer.py ./verbs.csv`
+    - `python scripts/import_italian_verbs.py ./italian_verbs_2019_04_12.csv`
 1. backend is now served on `localhost:8000`
 1. react dev server is served on `localhost:9000`
 
