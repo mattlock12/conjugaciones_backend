@@ -13,10 +13,13 @@ const StyledEntry = styled.div`
 
 export default class Container extends Component {
   render() {
+    let language = window.location.search.split('=')[1];
+    language = language ? language.toUpperCase() : 'ES';
+
     return (
       <StyledEntry>
-        <AppHeader />
-        <VerbContainer />
+        <AppHeader language={language} />
+        <VerbContainer language={language} />
       </StyledEntry>
     )   
   }

@@ -1,6 +1,8 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Form, Field } from 'react-final-form'
 import styled from 'styled-components';
+
+import { LANGUAGE_TO_LABELS } from '../constants/Constants';
 
 const FormLine = styled.div`
   align-items: center;
@@ -57,16 +59,14 @@ const CheckButton = styled.button`
   font-weight: 600;
   padding: 20px;
   margin-top: 5px;
-`
 
-const personToLabel = {
-  form1s: 'yo',
-  form2s: 'tu',
-  form3s: 'Ud',
-  form1p: 'nos.',
-  form2p: 'vos.',
-  form3p: 'Uds.' 
-};
+  &:hover {
+    background: #2dd251;
+    border: 1px solid #2dd251;
+    color: white;
+    cursor: pointer;
+  }
+`
 
 
 const checkAnswer = (conjugations, values, form, cb) => {
@@ -78,7 +78,7 @@ const checkAnswer = (conjugations, values, form, cb) => {
 };
 
 
-const ConjugationForm = ({ conjugations, verb, tense, idx }) => (
+const ConjugationForm = ({ conjugations, verb, tense, language }) => (
   <Form
     key={ `${verb.infinitive}${tense}` }
     onSubmit={(values, form, cb) => checkAnswer(conjugations, values, form, cb)}
@@ -87,8 +87,8 @@ const ConjugationForm = ({ conjugations, verb, tense, idx }) => (
         <form id="search___" onSubmit={handleSubmit} autoComplete={ 'off' }>
         {
           Object.keys(conjugations).map(person => (
-            personToLabel[person] &&
-            <FormLine 
+            LANGUAGE_TO_LABELS[language][person] &&
+            <FormLine
               key={person} 
               shouldShow={
                 !(
@@ -97,7 +97,7 @@ const ConjugationForm = ({ conjugations, verb, tense, idx }) => (
                 )
               }
             >
-              <PersonLabel>{personToLabel[person]}</PersonLabel>
+              <PersonLabel>{LANGUAGE_TO_LABELS[language][person]}</PersonLabel>
               <Field name={person}>
                   {({ input, meta }) => {
                     const hasSubmitted = meta.submitFailed || meta.submitSucceeded;
@@ -110,7 +110,7 @@ const ConjugationForm = ({ conjugations, verb, tense, idx }) => (
                         <Answer 
                           shouldShow={shouldShow}
                           showError={showError}
-                        >{conjugations[person]}</Answer>
+                        >{conjugations[person].toLowerCase()}</Answer>
                       </InputContainer>
                     );  
                   }}

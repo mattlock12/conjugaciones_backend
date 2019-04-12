@@ -1,58 +1,57 @@
 import React from 'react';
 import styled from 'styled-components';
+import { capitalize } from 'lodash';
 
-const INDICATIVE_TENSES = [
-  "Presente",
-  "Presente - Imperativo",
-  "Presente perfecto",
-  "Pretérito",
-  "Futuro",
-  "Futuro perfecto",
-  "Pluscuamperfecto",
-  "Imperfecto",
-  "Pretérito anterior",
-  "Condicional",
-  "Condicional perfecto"
-];
+const TenseHeader = styled.div`
+  width: 90%;
 
-const Tense = styled.td`
+  .tense-holder {
+    display: flex;
+    flex-wrap: wrap;
+  }
+`;
+
+
+const Tense = styled.div`
   text-align: center;
   font-size:  12px;
   padding: 5px;
   border-radius: 7px;
+  margin: 2px 2.5px;
   background: ${props => props.active ? '#4cd0ba' :  'white'};
   color: ${props => props.active ? 'white' : 'black' };
+  border: 1px solid transparent;
+
+  &:hover {
+    cursor: pointer;
+    border: 1px solid ${props => props.active ? 'transparent' : 'blue' };
+    background: ${props => props.active ? '#4cd0ba' : 'white' };
+    color: ${props => props.active ? 'white' : 'blue '};
+  }
 `
 
 
-export default ({activeTenses, toggleTense, moodSuffix=''}) => (
-  <div>
-    <div>{ moodSuffix.length ? 'Subjunctive' : 'Indicative / Imperative' }</div>
-    <table>
-      <tbody>
-        <tr>
-          {
-            INDICATIVE_TENSES.map((t) => {
-              const tense = `${t}${moodSuffix}`
-              if (tense in activeTenses) {
-                return (
-                  <Tense 
-                    key={ tense }
-                    name={ tense }
-                    active={ activeTenses[tense] }
-                    onClick={ () => toggleTense(tense) }
-                  >{ tense }</Tense>
-                );
-              } else {
-                return (
-                  <td>{ ` ` }</td>
-                );
-
-              }
-            })
+export default ({ title, activeTenses, toggleTense, moodSuffix='' }) => (
+  <TenseHeader>
+    <div>{title}</div>
+    <div className='tense-holder'>
+      {
+        Object.keys(activeTenses).map((t) => {
+          const tense = `${t}${moodSuffix}`
+          if (tense in activeTenses) {
+            return (
+              <Tense 
+                key={ tense }
+                name={ tense }
+                active={ activeTenses[tense] }
+                onClick={ () => toggleTense(tense) }
+              >{ capitalize(tense) }</Tense>
+            );
+          } else {
+            return null;
           }
-        </tr>
-      </tbody>
-    </table>
-  </div>
+        })
+      }
+    </div>
+  </TenseHeader>
 )
