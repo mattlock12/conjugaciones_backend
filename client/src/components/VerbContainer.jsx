@@ -134,7 +134,7 @@ export default class VerbContainer extends Component {
   loadVerbs() {
     const { language } = this.props;
     const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost:8000';
-    fetch(`http://${verbsUrl}/api/verbs?l=${language}`).then(resp =>
+    fetch(`http://${verbsUrl}/api/verbs?l=${language}`, {redirect: 'follow'}).then(resp =>
       resp.json().then(rResp =>
         this.setState({ verbs: rResp, hasLoaded: true }))
     );
@@ -243,6 +243,11 @@ export default class VerbContainer extends Component {
             <ConjugationFormList>
             {
               Object.keys(tenses).filter(t => tenses[t]).map((tense, tIdx) => (
+                (
+                  Object.values(
+                    verbs[idx].conjugations.find(v => v.tense.toLowerCase() === tense.toLowerCase()) || {}
+                  ).some(v => v)
+                ) &&
                 <ConjugationFormHolder key={`${tense}${verbs[idx]}`} >
                   <ConjugationTense key={`${tense}tense`}>{capitalize(tense)}</ConjugationTense>
                   <ConjugationForm
