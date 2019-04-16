@@ -14,4 +14,4 @@ pgdata
 *static
 *node_modules
 client/dist
-*docker-compose.prod.yml
+#docker-compose.prod.yml
