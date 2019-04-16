@@ -9,29 +9,34 @@ services:
       POSTGRES_DB: 'conjugaciones'
     volumes:
       - ./pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
 
   client:
     build: ./client
     restart: on-failure
-    ports:
-      # make sure webpack-dev-server uses the --host 0.0.0.0 flag
-      # otherwise Docker maps it some gypsy internal ip, I think
-      - "9000:9000"
     volumes:
       - ./client:/app
       - ./static:/app/dist
-    command: ["npm", "run", "start"]
+    command: ["npm", "run", "build"]
 
   backend:
     build: ./backend
     restart: on-failure
-    ports:
-      - "8000:8000"
+    container_name: backend
     volumes:
       - ./backend:/app
-      - ./static/:/app/static
     depends_on:
       - db
       - client
+    command: ["python", "/app/application.py"]
+
+  nginx:
+    image: nginx
+    restart: on-failure
+    volumes:
+      - ./static:/www/static
+      - ./data/nginx/app.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - backend

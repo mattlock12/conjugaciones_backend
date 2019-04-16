@@ -1,7 +1,7 @@
 import json
 import random
 
-from flask import request
+from flask import request, Response
 
 from app import app
 from .constants import MOST_COMMON, Languages
@@ -9,9 +9,9 @@ from .models import Verb, VerbConjugation
 from .utils import jsonify_verb
 
 
-@app.route('/')
-def index():
-    return app.send_static_file('index.html'), 200
+# @app.route('/')
+# def index():
+#     return app.send_static_file('index.html'), 200
 
 @app.route('/api/verbs')
 def verb_list():
@@ -37,9 +37,11 @@ def verb_list():
         getattr(app, most_common_cache_key),
         min(25, len(getattr(app, most_common_cache_key, [])))
     )
-    return json.dumps(
+    resp = Response( json.dumps(
         random.sample(getattr(app, verb_cache_key), 25) + rando_sample_of_most_common
-    ), 200
+    ))
+
+    return resp
 
 
 # TODO
