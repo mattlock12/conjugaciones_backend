@@ -27,7 +27,7 @@ services:
     depends_on:
       - db
       - client
-    command: ["python", "/app/application.py"]
+    command: ["uwsgi", "--ini", "wsgi.ini"]
 
   nginx:
     image: nginx

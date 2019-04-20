@@ -31,6 +31,7 @@ python-editor==1.0.3
 six==1.11.0
 SQLAlchemy==1.2.14
 traitlets==4.3.2
+uWSGI==2.0.18
 wcwidth==0.1.7
 Werkzeug==0.14.1
 wrapt==1.10.11

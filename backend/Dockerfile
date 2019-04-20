@@ -1,4 +1,6 @@
 FROM python:3.7-slim
+RUN apt-get update
+RUN apt-get install -y build-essential python
 COPY . /app
 WORKDIR /app/
 RUN cd /app && pip install -r requirements.txt
