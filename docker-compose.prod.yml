@@ -14,6 +14,7 @@ services:
     volumes:
       - ./static:/www/static
       - ./data/nginx/app.prod.conf:/etc/nginx/nginx.conf
+      - /data/certbot/:/var/www/letsencrypt/
     ports:
       - 80:80
       - 443:443
