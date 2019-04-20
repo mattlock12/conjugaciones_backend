@@ -134,7 +134,8 @@ export default class VerbContainer extends Component {
   loadVerbs() {
     const { language } = this.props;
     const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost';
-    fetch(`http://${verbsUrl}/api/verbs?l=${language}`, {redirect: 'follow'}).then(resp =>
+    const proto = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    fetch(`${proto}://${verbsUrl}/api/verbs?l=${language}`, {redirect: 'follow'}).then(resp =>
       resp.json().then(rResp =>
         this.setState({ verbs: rResp, hasLoaded: true }))
     );
