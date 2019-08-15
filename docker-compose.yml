@@ -12,11 +12,14 @@ services:
 
   client:
     build: ./client
+    container_name: client
     restart: on-failure
     volumes:
       - ./client:/app
       - ./static:/app/dist
-    command: ["npm", "run", "build"]
+    ports:
+      - 9000:9000
+    command: ["npm", "run", "start"]
 
   backend:
     build: ./backend

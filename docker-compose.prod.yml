@@ -4,16 +4,17 @@ services:
     build: ./client
     restart: on-failure
     volumes:
-      - ./client:/app
-      - ./static:/app/dist
+      - static:/app/dist
     command: ["npm", "run", "prod"]
 
   nginx:
     image: nginx
     restart: on-failure
     volumes:
-      - ./static:/www/static
+      - static:/www/static
       - ./data/nginx/app.prod.conf:/etc/nginx/nginx.conf
+      - certbot-etc: /etc/letsencrypt
+      - certbot-var: /var/letsencrypt
     ports:
       - 80:80
       - 443:443

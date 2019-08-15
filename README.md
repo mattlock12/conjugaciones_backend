@@ -47,5 +47,12 @@ React client to consume it
 1. backend is now served on `localhost:8000`
 1. react dev server is served on `localhost:9000`
 
+## As far as deploying
+At some point I'll use certbot integrated with Docker.
+But until that point, I manually install certbot on the host and nginx link the live cert directories.
+
+Also don't forget that the command to bring it up in production is:
+`docker-compose up -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
 
 USE: https://www.randomlists.com/data/spanish-words.json

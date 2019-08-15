@@ -116,13 +116,13 @@ export default class VerbContainer extends Component {
     super(props);
 
     const { language } = this.props;
-    const savedTenses = JSON.parse(localStorage.getItem(`tenses__${language}`)) || {};
+    const savedActiveTenses = JSON.parse(localStorage.getItem(`activeTenses__${language}`)) || {};
     const defaultTenses = LANGUAGE_TO_TENSES[language];
 
     this.state = {
       verbs: [],
       idx: 0,
-      tenses: Object.assign(defaultTenses, savedTenses),
+      activeTenses: Object.assign(defaultTenses, savedActiveTenses),
       hasLoaded: false
     }
 
@@ -134,7 +134,8 @@ export default class VerbContainer extends Component {
   loadVerbs() {
     const { language } = this.props;
     const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost';
-    fetch(`http://${verbsUrl}/api/verbs?l=${language}`, {redirect: 'follow'}).then(resp =>
+    const scheme = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    fetch(`${scheme}://${verbsUrl}/api/verbs?l=${language}`, {redirect: 'follow'}).then(resp =>
       resp.json().then(rResp =>
         this.setState({ verbs: rResp, hasLoaded: true }))
     );
@@ -159,28 +160,28 @@ export default class VerbContainer extends Component {
     if (tenseNames instanceof Array) {
       // from the mobile select dropdown
       this.setState((prevState) => {
-        const tenses = {};
-        Object.keys(prevState.tenses).forEach(t => (tenses[t] = false));
-        tenseNames.forEach(t => tenses[t.value] = true);
-        const newState = { tenses };
+        const activeTenses = {};
+        Object.keys(prevState.activeTenses).forEach(t => (activeTenses[t] = false));
+        tenseNames.forEach(t => activeTenses[t.value] = true);
+        const newState = { activeTenses };
          localStorage.setItem(
-           `tenses__${language}`,
-           JSON.stringify(tenses)
+           `activeTenses__${language}`,
+           JSON.stringify(activeTenses)
         );
          return newState;
       });
-      
+
     } else {
       this.setState((prevState) => {
         const newState = {
-          tenses: {
-            ...prevState.tenses,
-            [tenseNames]: !prevState.tenses[tenseNames]
+          activeTenses: {
+            ...prevState.activeTenses,
+            [tenseNames]: !prevState.activeTenses[tenseNames]
           }
          }
          localStorage.setItem(
-           `tenses__${language}`,
-           JSON.stringify({...prevState.tenses, ...newState.tenses})
+           `activeTenses__${language}`,
+           JSON.stringify({...prevState.activeTenses, ...newState.activeTenses})
         );
          return newState;
       });
@@ -193,45 +194,30 @@ export default class VerbContainer extends Component {
 
   render() {
     const { language } = this.props;
-    const { hasLoaded, tenses, verbs, idx } = this.state;
+    const { hasLoaded, activeTenses, verbs, idx } = this.state;
     const verb = verbs[idx];
-    const moodSuffixesWithTitles = language === 'ES'
-      ? [
-        {title: 'Indicativo', suffix: ''},
-        {title: 'Subjuntivo', suffix: ' - Subjuntivo'}
-      ]
-      : [
-        {title: 'Tenses', suffix: ''}
-      ];
 
     return (
       <StyledContainer>
         <TenseHeaderContainer>
           <MediaQuery query="(max-device-width: 900px)">
-            <TenseHeaderMobile 
-              activeTenses={ tenses }
-              title={ 'Tense/Mood'}
-              tenseOptions={ Object.keys(tenses) }
+            <TenseHeaderMobile
+              activeTenses={ activeTenses }
+              tenseOptions={ Object.keys(activeTenses) }
               toggleTense={ this._toggleTense}
             />
           </MediaQuery>
           <MediaQuery query="(min-device-width: 901px)">
-          {
-            moodSuffixesWithTitles.map(moodObj => (
-              <TenseHeader 
-                activeTenses={ tenses }
-                title={moodObj.title}
-                moodSuffix={moodObj.suffix}
-                toggleTense={ this._toggleTense}
+            <TenseHeader
+              activeTenses={ activeTenses }
+              toggleTense={ this._toggleTense}
             />
-            ))
-          }
           </MediaQuery>
-          
+
         </TenseHeaderContainer>
-        { 
-          !hasLoaded ? 
-          <h1>Loading Some Verbs</h1> : 
+        {
+          !hasLoaded ?
+          <h1>Loading Some Verbs</h1> :
           <div>
             <StyledVerbContainer>
               <div id='infinitive-organizer'>
@@ -242,7 +228,7 @@ export default class VerbContainer extends Component {
             </StyledVerbContainer>
             <ConjugationFormList>
             {
-              Object.keys(tenses).filter(t => tenses[t]).map((tense, tIdx) => (
+              Object.keys(activeTenses).filter(t => activeTenses[t]).map((tense, tIdx) => (
                 (
                   Object.values(
                     verbs[idx].conjugations.find(v => v.tense.toLowerCase() === tense.toLowerCase()) || {}
@@ -256,11 +242,11 @@ export default class VerbContainer extends Component {
                     verb={ verbs[idx] }
                     tense={ tense }
                     language={language}
-                    conjugations={ 
-                      verbs[idx].conjugations.find(v => 
+                    conjugations={
+                      verbs[idx].conjugations.find(v =>
                         v.tense.toLowerCase() === tense.toLowerCase()
-                      ) || {} 
-                    } 
+                      ) || {}
+                    }
                   />
                 </ConjugationFormHolder>
               ))
