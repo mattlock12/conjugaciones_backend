@@ -1,3 +1,9 @@
-from django.shortcuts import render
+from rest_framework import viewsets
 
-# Create your views here.
+from .models import Verb
+from .serializers import VerbSerializer
+
+
+class VerbsViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Verb.objects.all()
+    serializer_class = VerbSerializer

@@ -27,6 +27,7 @@ services:
     depends_on:
       - db
       - client
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
   nginx:
     image: nginx
