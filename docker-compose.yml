@@ -12,24 +12,29 @@ services:
 
   client:
     build: ./client
+    container_name: client
     restart: on-failure
+    ports:
+      - 9000:9000
     volumes:
       - ./client:/app
       - ./static:/app/dist
-    command: ["npm", "run", "build"]
+    command: ["npm", "run", "start"]
 
   backend:
-    build: ./backend
+    build: ./conjugaciones_api
     restart: on-failure
     container_name: backend
     volumes:
-      - ./backend:/app
+      - ./conjugaciones_api:/app
     depends_on:
       - db
       - client
-    command: ["uwsgi", "--ini", "wsgi.ini"]
+      - redis
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
   nginx:
+    container_name: nginx
     image: nginx
     restart: on-failure
     volumes:
@@ -40,3 +45,7 @@ services:
       - 443:443
     depends_on:
       - backend
+
+  redis:
+    container_name: redis
+    image: redis

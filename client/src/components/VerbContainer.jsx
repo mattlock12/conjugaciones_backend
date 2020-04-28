@@ -99,14 +99,14 @@ const ConjugationFormHolder = styled.div`
   font-size: 1rem;
 
   @media (max-width: 900px) {
-    margin: 0;
+    margin: 5px 0;
     font-size: 1rem;
     width: 100%;
   }
 `
 
 const ConjugationTense = styled.div`
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 600;
   margin-bottom: 7px;
 `
@@ -134,9 +134,10 @@ export default class VerbContainer extends Component {
   loadVerbs() {
     const { language } = this.props;
     const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost';
-    fetch(`http://${verbsUrl}/api/verbs?l=${language}`, {redirect: 'follow'}).then(resp =>
-      resp.json().then(rResp =>
-        this.setState({ verbs: rResp, hasLoaded: true }))
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    fetch(`${protocol}://${verbsUrl}/api/verbs?l=${language}`, {redirect: 'follow'}).then(
+      resp => resp.json().then(rResp => this.setState({ verbs: rResp, hasLoaded: true })),
+      resp => console.log(resp)
     );
   }
 
@@ -169,7 +170,7 @@ export default class VerbContainer extends Component {
         );
          return newState;
       });
-      
+
     } else {
       this.setState((prevState) => {
         const newState = {
@@ -195,43 +196,31 @@ export default class VerbContainer extends Component {
     const { language } = this.props;
     const { hasLoaded, tenses, verbs, idx } = this.state;
     const verb = verbs[idx];
-    const moodSuffixesWithTitles = language === 'ES'
-      ? [
-        {title: 'Indicativo', suffix: ''},
-        {title: 'Subjuntivo', suffix: ' - Subjuntivo'}
-      ]
-      : [
-        {title: 'Tenses', suffix: ''}
-      ];
 
     return (
       <StyledContainer>
         <TenseHeaderContainer>
           <MediaQuery query="(max-device-width: 900px)">
-            <TenseHeaderMobile 
+            <TenseHeaderMobile
               activeTenses={ tenses }
               title={ 'Tense/Mood'}
               tenseOptions={ Object.keys(tenses) }
               toggleTense={ this._toggleTense}
             />
           </MediaQuery>
-          <MediaQuery query="(min-device-width: 901px)">
-          {
-            moodSuffixesWithTitles.map(moodObj => (
-              <TenseHeader 
-                activeTenses={ tenses }
-                title={moodObj.title}
-                moodSuffix={moodObj.suffix}
-                toggleTense={ this._toggleTense}
+          <MediaQuery query="(min-device-width: 901px)">{
+            <TenseHeader
+              activeTenses={ tenses }
+              title={"Tenses"}
+              toggleTense={ this._toggleTense}
             />
-            ))
           }
           </MediaQuery>
-          
+
         </TenseHeaderContainer>
-        { 
-          !hasLoaded ? 
-          <h1>Loading Some Verbs</h1> : 
+        {
+          !hasLoaded ?
+          <h1>Loading Some Verbs</h1> :
           <div>
             <StyledVerbContainer>
               <div id='infinitive-organizer'>
@@ -245,7 +234,7 @@ export default class VerbContainer extends Component {
               Object.keys(tenses).filter(t => tenses[t]).map((tense, tIdx) => (
                 (
                   Object.values(
-                    verbs[idx].conjugations.find(v => v.tense.toLowerCase() === tense.toLowerCase()) || {}
+                    verbs[idx].verbConjugations.find(v => v.tense.toLowerCase() === tense.toLowerCase()) || {}
                   ).some(v => v)
                 ) &&
                 <ConjugationFormHolder key={`${tense}${verbs[idx]}`} >
@@ -256,11 +245,11 @@ export default class VerbContainer extends Component {
                     verb={ verbs[idx] }
                     tense={ tense }
                     language={language}
-                    conjugations={ 
-                      verbs[idx].conjugations.find(v => 
+                    verbConjugations={
+                      verbs[idx].verbConjugations.find(v =>
                         v.tense.toLowerCase() === tense.toLowerCase()
-                      ) || {} 
-                    } 
+                      ) || {}
+                    }
                   />
                 </ConjugationFormHolder>
               ))
