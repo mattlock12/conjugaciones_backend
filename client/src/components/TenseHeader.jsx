@@ -31,21 +31,20 @@ const Tense = styled.div`
 `
 
 
-export default ({ title, activeTenses, toggleTense, moodSuffix='' }) => (
+export default ({ title, activeTenses, toggleTense }) => (
   <TenseHeader>
     <div>{title}</div>
     <div className='tense-holder'>
       {
         Object.keys(activeTenses).map((t) => {
-          const tense = `${t}${moodSuffix}`
-          if (tense in activeTenses) {
+          if (t in activeTenses) {
             return (
-              <Tense 
-                key={ tense }
-                name={ tense }
-                active={ activeTenses[tense] }
-                onClick={ () => toggleTense(tense) }
-              >{ capitalize(tense) }</Tense>
+              <Tense
+                key={ t }
+                name={ t }
+                active={ activeTenses[t] }
+                onClick={ () => toggleTense(t) }
+              >{ capitalize(t) }</Tense>
             );
           } else {
             return null;

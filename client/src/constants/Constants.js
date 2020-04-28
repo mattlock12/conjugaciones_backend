@@ -5,29 +5,29 @@ export const PERSON_TO_LABEL_ES = {
   form3s: 'Ud',
   form1p: 'nos.',
   form2p: 'vos.',
-  form3p: 'Uds.' 
+  form3p: 'Uds.'
 };
 
 
 export const DEFAULT_TENSES_ES = {
-  "Presente": true, 
-  "Presente - Imperativo": false, 
-  "Presente perfecto": false, 
-  "Pretérito": true, 
+  "Presente": true,
+  "Presente - Imperativo": false,
+  "Presente perfecto": false,
+  "Pretérito": true,
   "Futuro": true,
-  "Futuro perfecto": false, 
-  "Pluscuamperfecto": false, 
-  "Imperfecto": false, 
-  "Pretérito anterior": false, 
+  "Futuro perfecto": false,
+  "Pluscuamperfecto": false,
+  "Imperfecto": false,
+  "Pretérito anterior": false,
   "Condicional": false,
-  "Condicional perfecto": false, 
+  "Condicional perfecto": false,
   // subjunctive
-  "Presente - Subjuntivo": false, 
-  "Presente perfecto - Subjuntivo": false, 
+  "Presente - Subjuntivo": false,
+  "Presente perfecto - Subjuntivo": false,
   "Futuro - Subjuntivo": false,
   "Futuro perfecto - Subjuntivo": false,
-  "Pluscuamperfecto - Subjuntivo": false, 
-  "Imperfecto - Subjuntivo": false, 
+  "Pluscuamperfecto - Subjuntivo": false,
+  "Imperfecto - Subjuntivo": false,
 }
 
 

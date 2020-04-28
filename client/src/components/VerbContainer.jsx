@@ -99,14 +99,14 @@ const ConjugationFormHolder = styled.div`
   font-size: 1rem;
 
   @media (max-width: 900px) {
-    margin: 0;
+    margin: 5px 0;
     font-size: 1rem;
     width: 100%;
   }
 `
 
 const ConjugationTense = styled.div`
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 600;
   margin-bottom: 7px;
 `
@@ -134,14 +134,10 @@ export default class VerbContainer extends Component {
   loadVerbs() {
     const { language } = this.props;
     const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost';
-    fetch(
-      `http://${verbsUrl}/api/verbs/?l=${language}`,
-      {
-        redirect: 'follow',
-      }
-    ).then(resp =>
-      resp.json().then(rResp =>
-        this.setState({ verbs: rResp, hasLoaded: true }))
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    fetch(`${protocol}://${verbsUrl}/api/verbs?l=${language}`, {redirect: 'follow'}).then(
+      resp => resp.json().then(rResp => this.setState({ verbs: rResp, hasLoaded: true })),
+      resp => console.log(resp)
     );
   }
 
@@ -200,14 +196,6 @@ export default class VerbContainer extends Component {
     const { language } = this.props;
     const { hasLoaded, tenses, verbs, idx } = this.state;
     const verb = verbs[idx];
-    const moodSuffixesWithTitles = language === 'ES'
-      ? [
-        {title: 'Indicativo', suffix: ''},
-        {title: 'Subjuntivo', suffix: ' - Subjuntivo'}
-      ]
-      : [
-        {title: 'Tenses', suffix: ''}
-      ];
 
     return (
       <StyledContainer>
@@ -220,17 +208,12 @@ export default class VerbContainer extends Component {
               toggleTense={ this._toggleTense}
             />
           </MediaQuery>
-          <MediaQuery query="(min-device-width: 901px)">
-          {
-            moodSuffixesWithTitles.map(moodObj => (
-              <TenseHeader
-                key={moodObj.title}
-                activeTenses={ tenses }
-                title={moodObj.title}
-                moodSuffix={moodObj.suffix}
-                toggleTense={ this._toggleTense}
+          <MediaQuery query="(min-device-width: 901px)">{
+            <TenseHeader
+              activeTenses={ tenses }
+              title={"Tenses"}
+              toggleTense={ this._toggleTense}
             />
-            ))
           }
           </MediaQuery>
 
