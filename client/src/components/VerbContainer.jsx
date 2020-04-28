@@ -134,7 +134,12 @@ export default class VerbContainer extends Component {
   loadVerbs() {
     const { language } = this.props;
     const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost';
-    fetch(`http://${verbsUrl}/api/verbs?l=${language}`, {redirect: 'follow'}).then(resp =>
+    fetch(
+      `http://${verbsUrl}/api/verbs/?l=${language}`,
+      {
+        redirect: 'follow',
+      }
+    ).then(resp =>
       resp.json().then(rResp =>
         this.setState({ verbs: rResp, hasLoaded: true }))
     );
@@ -169,7 +174,7 @@ export default class VerbContainer extends Component {
         );
          return newState;
       });
-      
+
     } else {
       this.setState((prevState) => {
         const newState = {
@@ -208,7 +213,7 @@ export default class VerbContainer extends Component {
       <StyledContainer>
         <TenseHeaderContainer>
           <MediaQuery query="(max-device-width: 900px)">
-            <TenseHeaderMobile 
+            <TenseHeaderMobile
               activeTenses={ tenses }
               title={ 'Tense/Mood'}
               tenseOptions={ Object.keys(tenses) }
@@ -218,7 +223,8 @@ export default class VerbContainer extends Component {
           <MediaQuery query="(min-device-width: 901px)">
           {
             moodSuffixesWithTitles.map(moodObj => (
-              <TenseHeader 
+              <TenseHeader
+                key={moodObj.title}
                 activeTenses={ tenses }
                 title={moodObj.title}
                 moodSuffix={moodObj.suffix}
@@ -227,11 +233,11 @@ export default class VerbContainer extends Component {
             ))
           }
           </MediaQuery>
-          
+
         </TenseHeaderContainer>
-        { 
-          !hasLoaded ? 
-          <h1>Loading Some Verbs</h1> : 
+        {
+          !hasLoaded ?
+          <h1>Loading Some Verbs</h1> :
           <div>
             <StyledVerbContainer>
               <div id='infinitive-organizer'>
@@ -245,7 +251,7 @@ export default class VerbContainer extends Component {
               Object.keys(tenses).filter(t => tenses[t]).map((tense, tIdx) => (
                 (
                   Object.values(
-                    verbs[idx].conjugations.find(v => v.tense.toLowerCase() === tense.toLowerCase()) || {}
+                    verbs[idx].verbConjugations.find(v => v.tense.toLowerCase() === tense.toLowerCase()) || {}
                   ).some(v => v)
                 ) &&
                 <ConjugationFormHolder key={`${tense}${verbs[idx]}`} >
@@ -256,11 +262,11 @@ export default class VerbContainer extends Component {
                     verb={ verbs[idx] }
                     tense={ tense }
                     language={language}
-                    conjugations={ 
-                      verbs[idx].conjugations.find(v => 
+                    verbConjugations={
+                      verbs[idx].verbConjugations.find(v =>
                         v.tense.toLowerCase() === tense.toLowerCase()
-                      ) || {} 
-                    } 
+                      ) || {}
+                    }
                   />
                 </ConjugationFormHolder>
               ))

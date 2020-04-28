@@ -15,7 +15,7 @@ class Verb(models.Model):
     past_participle = models.CharField(max_length=127)
     gerund = models.CharField(max_length=127)
 
-    def conjugations(self):
+    def verb_conjugations(self):
         return self.verbconjugation_set.all()
 
 
@@ -37,7 +37,7 @@ class VerbWeighter(models.Model):
     weight = models.DecimalField(max_digits=4, decimal_places=2)
     total_correct = models.IntegerField()
     total_incorrect = models.IntegerField()
-    last_updated = models.DateTimeField()
+    last_updated = models.DateTimeField(blank=True, null=True)
 
     def set_weight(self):
         times_seen_weight = min(50, 50 * (5 / (self.times_seen + 5)))

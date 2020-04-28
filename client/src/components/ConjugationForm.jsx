@@ -69,31 +69,31 @@ const CheckButton = styled.button`
 `
 
 
-const checkAnswer = (conjugations, values, form, cb) => {
+const checkAnswer = (verbConjugations, values, form, cb) => {
   const results = {};
   Object.keys(values).forEach(person => (
-    results[person] = values[person] && conjugations[person].toLowerCase().trim() !== values[person].toLowerCase().trim()
+    results[person] = values[person] && verbConjugations[person].toLowerCase().trim() !== values[person].toLowerCase().trim()
   ))
   cb(results);
 };
 
 
-const ConjugationForm = ({ conjugations, verb, tense, language }) => (
+const ConjugationForm = ({ verbConjugations, verb, tense, language }) => (
   <Form
     key={ `${verb.infinitive}${tense}` }
-    onSubmit={(values, form, cb) => checkAnswer(conjugations, values, form, cb)}
+    onSubmit={(values, form, cb) => checkAnswer(verbConjugations, values, form, cb)}
     render={
       ({ handleSubmit, values }) =>(
         <form id="search___" onSubmit={handleSubmit} autoComplete={ 'off' }>
         {
-          Object.keys(conjugations).map(person => (
+          Object.keys(verbConjugations).map(person => (
             LANGUAGE_TO_LABELS[language][person] &&
             <FormLine
-              key={person} 
+              key={person}
               shouldShow={
                 !(
                   tense.includes('Imperativo') &&
-                  ['form1s', 'form1p'].includes(person) || !conjugations[person]
+                  ['form1s', 'form1p'].includes(person) || !verbConjugations[person]
                 )
               }
             >
@@ -107,12 +107,12 @@ const ConjugationForm = ({ conjugations, verb, tense, language }) => (
                     return (
                       <InputContainer>
                         <FormInput {...input} type="text" />
-                        <Answer 
+                        <Answer
                           shouldShow={shouldShow}
                           showError={showError}
-                        >{conjugations[person].toLowerCase()}</Answer>
+                        >{verbConjugations[person].toLowerCase()}</Answer>
                       </InputContainer>
-                    );  
+                    );
                   }}
               </Field>
             </FormLine>
