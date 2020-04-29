@@ -48,7 +48,8 @@ class VerbsViewSet(viewsets.ReadOnlyModelViewSet):
         language = Verb.Languages(language_str)
 
         verbs = self._get_random_verbs(language=language)
-        verbs += random.sample(self._get_most_common(language=language), 25)
+        most_common = self._get_most_common(language=language)
+        verbs += random.sample(most_common, min(len(most_common), 25))
         # random.shuffle mutates the list
         random.shuffle(verbs)
 
