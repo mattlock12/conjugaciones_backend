@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Field } from 'react-final-form'
 import styled from 'styled-components';
+import MediaQuery from 'react-responsive';
 
 import { LANGUAGE_TO_LABELS } from '../constants/Constants';
 
@@ -54,6 +55,7 @@ const Answer = styled.p`
 `
 
 const CheckButton = styled.button`
+  display: ${props => props.isMobile ? 'default' : 'none' };
   width: 100%;
   border: 1px solid gray;
   border-radius: 8px;
@@ -125,7 +127,12 @@ const ConjugationForm = ({ verbConjugations, verb, tense, language }) => {
                 </Field>
               </FormLine>
             ))}
-            <CheckButton>Check</CheckButton>
+            <MediaQuery query="(min-device-width: 901px)">
+              <CheckButton isMobile={false }>Check</CheckButton>
+            </MediaQuery>
+            <MediaQuery query="(max-device-width: 900px)">
+              <CheckButton isMobile={true }>Check</CheckButton>
+            </MediaQuery>
           </form>
         )
       }

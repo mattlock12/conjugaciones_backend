@@ -1,35 +1,31 @@
 import React, { Component } from 'react';
-import MediaQuery from 'react-responsive';
 import styled from 'styled-components';
 import { capitalize } from 'lodash';
 
 import ConjugationForm from './ConjugationForm';
-import TenseHeader from './TenseHeader';
-import TenseHeaderMobile from './TenseHeaderMobile';
-
-import { LANGUAGE_TO_TENSES } from '../constants/Constants';
 
 
 const StyledContainer = styled.div`
+  background: #f7f7f7;
+  padding-left: 25px;
   width: 100%;
   height: 100%;
   overflow: scroll;
-  padding: 0 50px;
 
   @media (max-width: 900px) {
     padding: 0 20px;
   }
 `
 
-const TenseHeaderContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-`
-
-const StyledVerbContainer = styled.div`
+const StyledInfinitiveHeader = styled.div`
+  background: white;
   display: flex;
   align-items: center;
-  margin: 10px 0;
+  margin-left: -25px;
+  padding-left: 25px;
+  padding-top: 30px;
+  margin-bottom: 15px;
+  box-shadow: 1px 1px 3px #424242;
 
   #infinitive-organizer {
     display: flex;
@@ -39,7 +35,7 @@ const StyledVerbContainer = styled.div`
 
   #infinitive {
     font-weight: 600;
-    font-size: 36px;
+    font-size: 28px;
   }
 
   #infinitive-english {
@@ -48,10 +44,10 @@ const StyledVerbContainer = styled.div`
 
   #next-button {
     margin-left: 50px;
-    font-size: 24px;
+    font-size: 17px;
     border: 1px solid gray;
     border-radius: 10px;
-    padding: 8px;
+    padding: 5px;
     width: 150px;
     text-align: center;
 
@@ -69,10 +65,6 @@ const StyledVerbContainer = styled.div`
       align-items: flex-start;
     }
 
-    #infinitive {
-      font-size: 28px;
-    }
-
     #infinitive-english {
       margin-left: 0;
       font-size: .8rem;
@@ -80,6 +72,7 @@ const StyledVerbContainer = styled.div`
 
     #next-button {
       width: 100px;
+      font-size: 28px;
     }
   }
 `
@@ -88,10 +81,13 @@ const ConjugationFormList = styled.div`
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
+  background: #f7f7f7;
 `
 
 const ConjugationFormHolder = styled.div`
+  background: white;
   margin: 20px;
+  margin-left: 0px;
   margin-top: 0px;
   border: 1px solid #aaa;
   border-radius: 8px;
@@ -100,6 +96,7 @@ const ConjugationFormHolder = styled.div`
 
   @media (max-width: 900px) {
     margin: 5px 0;
+    margin-left: 5px;
     font-size: 1rem;
     width: 100%;
   }
@@ -115,19 +112,13 @@ export default class VerbContainer extends Component {
   constructor(props) {
     super(props);
 
-    const { language } = this.props;
-    const savedTenses = JSON.parse(localStorage.getItem(`tenses__${language}`)) || {};
-    const defaultTenses = LANGUAGE_TO_TENSES[language];
-
     this.state = {
       verbs: [],
       idx: 0,
-      tenses: Object.assign(defaultTenses, savedTenses),
       hasLoaded: false
     }
 
     this._loadVerbs = this.loadVerbs.bind(this);
-    this._toggleTense = this.toggleTense.bind(this);
     this._nextVerb = this.nextVerb.bind(this);
   }
 
@@ -154,84 +145,32 @@ export default class VerbContainer extends Component {
     }
   }
 
-  toggleTense(tenseNames) {
-    const { language } = this.props;
-
-    if (tenseNames instanceof Array) {
-      // from the mobile select dropdown
-      this.setState((prevState) => {
-        const tenses = {};
-        Object.keys(prevState.tenses).forEach(t => (tenses[t] = false));
-        tenseNames.forEach(t => tenses[t.value] = true);
-        const newState = { tenses };
-         localStorage.setItem(
-           `tenses__${language}`,
-           JSON.stringify(tenses)
-        );
-         return newState;
-      });
-
-    } else {
-      this.setState((prevState) => {
-        const newState = {
-          tenses: {
-            ...prevState.tenses,
-            [tenseNames]: !prevState.tenses[tenseNames]
-          }
-         }
-         localStorage.setItem(
-           `tenses__${language}`,
-           JSON.stringify({...prevState.tenses, ...newState.tenses})
-        );
-         return newState;
-      });
-    }
-  }
 
   submitVerbs(values) {
     this.setState({ formValues: values });
   }
 
   render() {
-    const { language } = this.props;
-    const { hasLoaded, tenses, verbs, idx } = this.state;
+    const { language, tenses } = this.props;
+    const { hasLoaded, verbs, idx } = this.state;
     const verb = verbs[idx];
 
     return (
       <StyledContainer>
-        <TenseHeaderContainer>
-          <MediaQuery query="(max-device-width: 900px)">
-            <TenseHeaderMobile
-              activeTenses={ tenses }
-              title={ 'Tense/Mood'}
-              tenseOptions={ Object.keys(tenses) }
-              toggleTense={ this._toggleTense}
-            />
-          </MediaQuery>
-          <MediaQuery query="(min-device-width: 901px)">{
-            <TenseHeader
-              activeTenses={ tenses }
-              title={"Tenses"}
-              toggleTense={ this._toggleTense}
-            />
-          }
-          </MediaQuery>
-
-        </TenseHeaderContainer>
         {
           !hasLoaded ?
           <h1>Loading Some Verbs</h1> :
           <div>
-            <StyledVerbContainer>
+            <StyledInfinitiveHeader>
               <div id='infinitive-organizer'>
                 <div id='infinitive'>{ verb.infinitive.toLowerCase() }</div>
                 <div id='infinitive-english'>({ verb.infinitiveEnglish.toLowerCase() })</div>
               </div>
               <div id='next-button' onClick={ this._nextVerb }>next >></div>
-            </StyledVerbContainer>
+            </StyledInfinitiveHeader>
             <ConjugationFormList>
             {
-              Object.keys(tenses).filter(t => tenses[t]).map((tense, tIdx) => (
+              tenses && Object.keys(tenses).filter(t => tenses[t]).map((tense, tIdx) => (
                 (
                   Object.values(
                     verbs[idx].verbConjugations.find(v => v.tense.toLowerCase() === tense.toLowerCase()) || {}

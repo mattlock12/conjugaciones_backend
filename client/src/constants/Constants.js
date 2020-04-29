@@ -30,6 +30,37 @@ export const DEFAULT_TENSES_ES = {
   "Imperfecto - Subjuntivo": false,
 }
 
+export const TENSES_WITH_CATEGORIES_ES = {
+  "Presente": [
+    "Presente",
+    "Presente - Imperativo",
+    "Presente perfecto",
+    "Presente - Subjuntivo",
+    "Presente perfecto - Subjuntivo"
+  ],
+  "Imperfecto": [
+    "Imperfecto - Subjuntivo",
+    "Imperfecto"
+  ],
+  "Pretérito": [
+    "Pretérito",
+    "Pretérito anterior"
+  ],
+  "Condicional": [
+    "Condicional",
+    "Condicional perfecto"
+  ],
+  "Futuro": [
+    "Futuro",
+    "Futuro perfecto",
+    "Futuro - Subjuntivo",
+    "Futuro perfecto - Subjuntivo"
+  ],
+  "Pluscuamperfecto": [
+    "Pluscuamperfecto",
+    "Pluscuamperfecto - Subjuntivo"
+  ]
+}
 
 // Italiano
 export const PERSON_TO_LABEL_IT = {
@@ -65,6 +96,11 @@ export const LANGUAGE_TO_TENSES = {
   ES: DEFAULT_TENSES_ES,
   IT: DEFAULT_TENSES_IT
 };
+
+export const TENSES_WITH_CATEGORIES_BY_LANGUAGE = {
+  ES: TENSES_WITH_CATEGORIES_ES,
+  IT: {}
+}
 
 
 export const LANGUAGE_TO_LABELS = {
