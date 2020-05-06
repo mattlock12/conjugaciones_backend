@@ -7,7 +7,7 @@ FIERY_ROSE,
 import TenseSelector from './TenseSelector';
 
 
-const AppHeader = styled.div`
+const StyledAppHeader = styled.div`
 position: relative;
 margin-left: ${props => props.isOpen ? '0px' : '-400px'};
 display: flex;
@@ -65,11 +65,17 @@ transition: .3s margin-left ease;
 }
 `
 
-export default ({ language, tenses, tensesWithCategories, toggleSelectedTense }) => {
+const AppHeader = ({
+  language,
+  tenses,
+  tensesWithCategories,
+  toggleSelectedTense,
+  children,
+}) => {
   const [ isOpen, toggleIsOpen ] = useState(true);
 
   return (
-    <AppHeader isOpen={isOpen}>
+    <StyledAppHeader isOpen={isOpen}>
       <div className='first-row'>
         <h1 id='logo'>Entend.ió</h1>
         <div className='language-selector'>
@@ -97,12 +103,15 @@ export default ({ language, tenses, tensesWithCategories, toggleSelectedTense })
         }
         </div>
       </div>
+      { children }
       <TenseSelector
         language={language}
         tenses={tenses}
         tensesWithCategories={tensesWithCategories}
         toggleSelectedTense={toggleSelectedTense}
       />
-      </AppHeader>
+      </StyledAppHeader>
   );
 }
+
+export default AppHeader;

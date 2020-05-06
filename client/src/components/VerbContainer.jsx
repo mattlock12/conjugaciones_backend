@@ -126,6 +126,7 @@ export default class VerbContainer extends Component {
     const { language } = this.props;
     const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost';
     const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    // TODO: is this how you handle dumbass fetch promises?
     fetch(`${protocol}://${verbsUrl}/api/verbs?l=${language}`, {redirect: 'follow'}).then(
       resp => resp.json().then(rResp => this.setState({ verbs: rResp, hasLoaded: true })),
       resp => console.log(resp)

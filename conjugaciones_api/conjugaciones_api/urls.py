@@ -19,13 +19,16 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from verbs.views import VerbsViewSet
+from users.views import UsersViewSet, LoginViewSet
 
 
 router = DefaultRouter()
 router.register(r'api/verbs', VerbsViewSet)
+router.register(r'api/users', UsersViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path(r'api/login/', LoginViewSet.as_view()),
 ]
 
 urlpatterns += router.urls

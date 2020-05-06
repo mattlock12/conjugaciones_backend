@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import { capitalize } from 'lodash';
-import MediaQuery from 'react-responsive';
 
 import {
   FIERY_ROSE,

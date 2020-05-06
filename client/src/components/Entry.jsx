@@ -4,20 +4,31 @@ import styled from 'styled-components';
 import { LANGUAGE_TO_TENSES, TENSES_WITH_CATEGORIES_BY_LANGUAGE } from '../constants/Constants';
 import AppHeader from './AppHeader';
 import VerbContainer from './VerbContainer';
+import Login from './Login';
+import UserDisplay from './UserDisplay';
+
+export const VERB_CONTAINER = 'VERB_CONTAINER';
+export const LOGIN_FORM = 'LOGIN_FORM';
 
 const StyledEntry = styled.div`
+height: 100%;
+
 display: flex;
   @media (max-width: 900px) {
     width: 90%;
   }
 `
 
+const Entry = ({
+  setUserToken,
+  setUser,
+  user
+}) => {
+  const [shouldDisplay, setShouldDisplay] = useState(VERB_CONTAINER);
 
-export default () => {
   let language = window.location.search.split('=')[1];
   language = language ? language.toUpperCase() : 'ES';
   const savedTenses = JSON.parse(localStorage.getItem(`tenses__${language}`)) || {};
-
   const [selectedTenses, toggleSelectedTense] = useState({
     ...LANGUAGE_TO_TENSES[language],
     ...savedTenses
@@ -28,9 +39,18 @@ export default () => {
       `tenses__${language}`,
       JSON.stringify(selectedTenses)
     );
-  });
+  }, [selectedTenses]);
 
-  console.log(TENSES_WITH_CATEGORIES_BY_LANGUAGE[language])
+  if (shouldDisplay === LOGIN_FORM) {
+    return (
+      <Login
+        setUser={setUser}
+        setUserToken={setUserToken}
+        setShouldDisplay={setShouldDisplay}
+       />
+    )
+  }
+
   return (
     <StyledEntry>
       <AppHeader
@@ -38,8 +58,17 @@ export default () => {
         tenses={selectedTenses}
         tensesWithCategories={TENSES_WITH_CATEGORIES_BY_LANGUAGE[language]}
         toggleSelectedTense={toggleSelectedTense}
-      />
+      >
+        <UserDisplay
+          user={user}
+          setUser={setUser}
+          setUserToken={setUserToken}
+          setShouldDisplay={setShouldDisplay}
+        />
+      </AppHeader>
       <VerbContainer language={language} tenses={selectedTenses} />
     </StyledEntry>
   )
 }
+
+export default Entry;
