@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { capitalize } from 'lodash';
+import { capitalize, isEmpty } from 'lodash';
 
 import ConjugationForm from './ConjugationForm';
 
@@ -108,96 +108,130 @@ const ConjugationTense = styled.div`
   margin-bottom: 7px;
 `
 
-export default class VerbContainer extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      verbs: [],
-      idx: 0,
-      hasLoaded: false
-    }
-
-    this._loadVerbs = this.loadVerbs.bind(this);
-    this._nextVerb = this.nextVerb.bind(this);
-  }
-
-  loadVerbs() {
-    const { language } = this.props;
-    const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost';
-    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-    // TODO: is this how you handle dumbass fetch promises?
-    fetch(`${protocol}://${verbsUrl}/api/verbs?l=${language}`, {redirect: 'follow'}).then(
-      resp => resp.json().then(rResp => this.setState({ verbs: rResp, hasLoaded: true })),
-      resp => console.log(resp)
-    );
-  }
-
-  componentDidMount() {
-    this._loadVerbs();
-  }
-
-  nextVerb() {
-    if (this.state.idx >= this.state.verbs.length - 1) {
-      this.setState({ idx: 0, hasLoaded: false, verbs: [] });
-      this.loadVerbs()
-    } else {
-      this.setState({ idx: this.state.idx + 1 });
-    }
-  }
-
-
-  submitVerbs(values) {
-    this.setState({ formValues: values });
-  }
-
-  render() {
-    const { language, tenses } = this.props;
-    const { hasLoaded, verbs, idx } = this.state;
-    const verb = verbs[idx];
-
-    return (
-      <StyledContainer>
+function fetchVerbs ({ language, setVerbs, setLoading, setIdx, user }) {
+  const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost';
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  return fetch(
+    `${protocol}://${verbsUrl}/api/verbs?l=${language}`,
+    {
+      redirect: 'follow',
+      headers: user && user.token ?
         {
-          !hasLoaded ?
-          <h1>Loading Some Verbs</h1> :
-          <div>
-            <StyledInfinitiveHeader>
-              <div id='infinitive-organizer'>
-                <div id='infinitive'>{ verb.infinitive.toLowerCase() }</div>
-                <div id='infinitive-english'>({ verb.infinitiveEnglish.toLowerCase() })</div>
-              </div>
-              <div id='next-button' onClick={ this._nextVerb }>next >></div>
-            </StyledInfinitiveHeader>
-            <ConjugationFormList>
-            {
-              tenses && Object.keys(tenses).filter(t => tenses[t]).map((tense, tIdx) => (
-                (
-                  Object.values(
-                    verbs[idx].verbConjugations.find(v => v.tense.toLowerCase() === tense.toLowerCase()) || {}
-                  ).some(v => v)
-                ) &&
-                <ConjugationFormHolder key={`${tense}${verbs[idx]}`} >
-                  <ConjugationTense key={`${tense}tense`}>{capitalize(tense)}</ConjugationTense>
-                  <ConjugationForm
-                    idx={ tIdx }
-                    key={ `${tense}CF` }
-                    verb={ verbs[idx] }
-                    tense={ tense }
-                    language={language}
-                    verbConjugations={
-                      verbs[idx].verbConjugations.find(v =>
-                        v.tense.toLowerCase() === tense.toLowerCase()
-                      ) || {}
-                    }
-                  />
-                </ConjugationFormHolder>
-              ))
-            }
-            </ConjugationFormList>
-          </div>
-        }
-      </StyledContainer>
-    );
-  }
+          'Authorization': `Token ${user.token}`
+        } :
+        {}
+    })
+    .then(
+      resp => resp.json().then(rResp => {
+        setVerbs(rResp);;
+        setLoading(false);
+        setIdx(0);
+      }),
+      error => {
+        console.error(error);
+        setLoading(false);
+      }
+    )
 }
+
+function submitConjugations ({ user, verb, answersByTense }) {
+  const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost';
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  const url = `${protocol}://${verbsUrl}/api/responses/` ;
+
+  const answers = Object.keys(answersByTense || {}).map(tense => ({ ...answersByTense[tense], tense }));
+  const payLoad = { user, verbId: verb.id, answers };
+  fetch(
+    url,
+    {
+      method: 'POST',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': user.token,
+      },
+      redirect: 'follow',
+      body: JSON.stringify(payLoad)
+    }
+  ).then(
+    res => null,
+    error => console.error("Failed submitting reponses")
+  );
+};
+
+const VerbContainer = ({ language, tenses, user }) => {
+  const [answersByTense, setAnswersByTense] = useState({});
+  const [isLoading, setLoading] = useState(true);
+  const [verbs, setVerbs] = useState([])
+  const [idx, setIdx] = useState(0)
+  useEffect(() => {
+    if (idx === 0) {
+      fetchVerbs({ language, setVerbs, setLoading, setIdx, user });
+    }
+  }, [idx]);
+
+  const verb = verbs[idx];
+  const verbsLength = verbs.length;
+
+  return (
+    <StyledContainer>
+      {
+        isLoading || !verb ?
+        <h1>Loading Some Verbs</h1> :
+        <div>
+          <StyledInfinitiveHeader>
+            <div id='infinitive-organizer'>
+              <div id='infinitive'>{ verb.infinitive.toLowerCase() }</div>
+              <div id='infinitive-english'>({ verb.infinitiveEnglish.toLowerCase() })</div>
+            </div>
+            <div
+              id='next-button'
+              onClick={() => {
+                if (user) {
+                   submitConjugations({ user, verb, answersByTense });
+                 }
+                setAnswersByTense({});
+
+                if (idx >= verbsLength - 1) {
+                 setIdx(0);
+                 setVerbs([]);
+                } else {
+                  setIdx(idx + 1);
+                }
+            }}>next >></div>
+          </StyledInfinitiveHeader>
+          <ConjugationFormList>
+          {
+            tenses && Object.keys(tenses).filter(t => tenses[t]).map((tense, tIdx) => (
+              (
+                Object.values(
+                  verbs[idx].verbConjugations.find(v => v.tense.toLowerCase() === tense.toLowerCase()) || {}
+                ).some(v => v)
+              ) &&
+              <ConjugationFormHolder key={`${tense}${verbs[idx]}`} >
+                <ConjugationTense key={`${tense}tense`}>{capitalize(tense)}</ConjugationTense>
+                <ConjugationForm
+                  idx={ tIdx }
+                  key={ `${tense}CF` }
+                  verb={ verbs[idx] }
+                  tense={ tense }
+                  language={language}
+                  answersByTense={answersByTense}
+                  setAnswersByTense={setAnswersByTense}
+                  verbConjugations={
+                    verbs[idx].verbConjugations.find(v =>
+                      v.tense.toLowerCase() === tense.toLowerCase()
+                    ) || {}
+                  }
+                />
+              </ConjugationFormHolder>
+            ))
+          }
+          </ConjugationFormList>
+        </div>
+      }
+    </StyledContainer>
+  );
+}
+
+export default VerbContainer;

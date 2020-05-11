@@ -66,7 +66,11 @@ const Entry = ({
           setShouldDisplay={setShouldDisplay}
         />
       </AppHeader>
-      <VerbContainer language={language} tenses={selectedTenses} />
+      <VerbContainer
+        language={language}
+        tenses={selectedTenses}
+        user={user}
+      />
     </StyledEntry>
   )
 }

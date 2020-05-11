@@ -12,25 +12,36 @@ const App = () => {
 
   const [user, setUser] = useState(null);
 
-  const [userToken, setUserToken] = useState(JSON.parse(localStorage.getItem(USERTOKEN_STORAGE_KEY)));
+  const userTokenFromLocalStorage = JSON.parse(localStorage.getItem(USERTOKEN_STORAGE_KEY));
+
+  const [isFetchingUser, setIsFetchingUser] = useState(!!userTokenFromLocalStorage)
+
+  const [userToken, setUserToken] = useState(userTokenFromLocalStorage);
   useEffect(() => {
     if (userToken) {
       fetch(url, { headers: { "Authorization": `Token ${userToken}` }})
         .then(resp => resp.json())
         .then(jsonResp => {
-          setUser({ ...jsonResp })
+          localStorage.setItem(USERTOKEN_STORAGE_KEY, JSON.stringify(userToken));
+          setUser({ ...jsonResp });
+          setIsFetchingUser(false);
         });
     } else {
       localStorage.removeItem(USERTOKEN_STORAGE_KEY);
+      setIsFetchingUser(false);
     }
   }, [userToken]);
 
+
+
+
   return (
+    !isFetchingUser &&
     <Entry
       setUserToken={setUserToken}
       setUser={setUser}
       user={user}
-     />
+    />
   );
 }
 

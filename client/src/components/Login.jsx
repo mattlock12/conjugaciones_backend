@@ -76,7 +76,7 @@ const submitLoginData = ({ values, url, setUser, setUserToken, setShouldDisplay 
 
       setShouldDisplay(VERB_CONTAINER);
       setUserToken(jsonResp.token);
-      setUser({ email: jsonResp.email });
+      setUser({ ...jsonResp });
 
       return undefined;
     }

@@ -80,6 +80,7 @@ const AppHeader = ({
         <h1 id='logo'>Entend.ió</h1>
         <div className='language-selector'>
           <a
+            key='es'
             href='/?l=ES'
             className={`language ${language === 'ES'
               ? 'selected'
@@ -87,6 +88,7 @@ const AppHeader = ({
             }
           >ES</a>
           <a
+            key='it'
             href='/?l=IT'
             className={`language ${language === 'IT'
               ? 'selected'

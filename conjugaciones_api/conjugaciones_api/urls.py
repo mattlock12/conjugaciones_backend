@@ -18,7 +18,7 @@ from django.urls import path
 
 from rest_framework.routers import DefaultRouter
 
-from verbs.views import VerbsViewSet
+from verbs.views import VerbsViewSet, VerbResponseViewSet
 from users.views import UsersViewSet, LoginViewSet
 
 
@@ -29,6 +29,7 @@ router.register(r'api/users', UsersViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path(r'api/login/', LoginViewSet.as_view()),
+    path(r'api/responses/', VerbResponseViewSet.as_view()),
 ]
 
 urlpatterns += router.urls

@@ -82,18 +82,19 @@ const checkAnswer = (verbConjugations, values, form, cb) => {
 };
 
 
-const ConjugationForm = ({ verbConjugations, verb, tense, language }) => {
-  const [points, setPoints] = useState(0);
-
+const ConjugationForm = ({ verbConjugations, verb, tense, language, answersByTense, setAnswersByTense }) => {
   return (
     <Form
       key={ `${verb.infinitive}${tense}` }
       onSubmit={(values, form, cb) => {
-        setPoints(1);
+        const oldAnswers = answersByTense[tense] || {};
+        const newAnswers = {...values, ...oldAnswers};
+        setAnswersByTense({ ...answersByTense, [tense]: newAnswers });
+
         return checkAnswer(verbConjugations, values, form, cb);
       }}
       render={
-        ({ handleSubmit, values }) =>(
+        ({ handleSubmit }) =>(
           <form id="search___" onSubmit={handleSubmit} autoComplete={ 'off' }>
           {
             Object.keys(verbConjugations).map(person => (
