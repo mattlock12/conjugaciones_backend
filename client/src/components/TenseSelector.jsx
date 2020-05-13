@@ -65,7 +65,7 @@ export default ({ tenses, tensesWithCategories, toggleSelectedTense }) => (
           <div className='tense-category-name'>{category}</div>
           <div className='tense-category-tenses'>
           {
-            tensesWithCategories[category].sort().map((t) => {
+            tensesWithCategories[category].map((t) => {
               if (t in tenses) {
                 return (
                   <Tense

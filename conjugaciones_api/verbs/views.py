@@ -102,7 +102,10 @@ class VerbResponseViewSet(generics.GenericAPIView):
                     continue
                 form_for_model = form.replace('form', 'form_')
                 correct_answer = getattr(conjugation_this_tense, form_for_model, None)
-                if answer == correct_answer:
+                if not correct_answer:
+                    raise Exception("No form %s form Verb %s" % (form_for_model, verb.infinitive))
+
+                if answer.lower() == correct_answer.lower():
                     total_correct += 1
                 else:
                     total_incorrect += 1

@@ -1,6 +1,6 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { capitalize, isEmpty } from 'lodash';
+import { capitalize } from 'lodash';
 
 import ConjugationForm from './ConjugationForm';
 

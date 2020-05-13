@@ -172,7 +172,6 @@ const Login = ({ setUser, setUserToken, setShouldDisplay }) => {
       }
     />
   )
-
 };
 
 export default Login;

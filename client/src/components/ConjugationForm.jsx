@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Form, Field } from 'react-final-form'
 import styled from 'styled-components';
 import MediaQuery from 'react-responsive';
@@ -94,7 +94,7 @@ const ConjugationForm = ({ verbConjugations, verb, tense, language, answersByTen
         return checkAnswer(verbConjugations, values, form, cb);
       }}
       render={
-        ({ handleSubmit }) =>(
+        ({ handleSubmit }) => (
           <form id="search___" onSubmit={handleSubmit} autoComplete={ 'off' }>
           {
             Object.keys(verbConjugations).map(person => (
@@ -129,10 +129,10 @@ const ConjugationForm = ({ verbConjugations, verb, tense, language, answersByTen
               </FormLine>
             ))}
             <MediaQuery query="(min-device-width: 901px)">
-              <CheckButton isMobile={false }>Check</CheckButton>
+              <CheckButton isMobile={false}>Check</CheckButton>
             </MediaQuery>
             <MediaQuery query="(max-device-width: 900px)">
-              <CheckButton isMobile={true }>Check</CheckButton>
+              <CheckButton isMobile={true}>Check</CheckButton>
             </MediaQuery>
           </form>
         )

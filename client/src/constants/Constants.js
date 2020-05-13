@@ -39,8 +39,8 @@ export const TENSES_WITH_CATEGORIES_ES = {
     "Presente perfecto - Subjuntivo"
   ],
   "Imperfecto": [
-    "Imperfecto - Subjuntivo",
-    "Imperfecto"
+    "Imperfecto",
+    "Imperfecto - Subjuntivo"
   ],
   "Pretérito": [
     "Pretérito",
@@ -91,6 +91,33 @@ export const DEFAULT_TENSES_IT = {
   'TRAPASSATO CONGIUNTIVO': false
 };
 
+export const TENSES_WITH_CATEGORIES_IT = {
+  'PRESENTE': [
+    'PRESENTE',
+    'PRESENTE CONDIZIONALE',
+    'PRESENTE CONGIUNTIVO',
+    'IMPERATIVO'
+  ],
+  'PASSATO': [
+    'PASSATO PROSSIMO',
+    'PASSATO CONDIZIONALE',
+    'PASSATO CONGIUNTIVO',
+    'PASSATO REMOTO'
+  ],
+  'IMPERFETTO': [
+    'IMPERFETTO',
+    'IMPERFETTO CONGIUNTIVO'
+  ],
+  'FUTURO': [
+    'FUTURO SEMPLICE',
+    'FUTURO ANTERIORE',
+  ],
+  'TRAPASSATO': [
+    'TRAPASSATO PROSSIMO',
+    'TRAPASSATO REMOTO',
+    'TRAPASSATO CONGIUNTIVO'
+  ]
+}
 
 export const LANGUAGE_TO_TENSES = {
   ES: DEFAULT_TENSES_ES,
@@ -99,7 +126,7 @@ export const LANGUAGE_TO_TENSES = {
 
 export const TENSES_WITH_CATEGORIES_BY_LANGUAGE = {
   ES: TENSES_WITH_CATEGORIES_ES,
-  IT: {}
+  IT: TENSES_WITH_CATEGORIES_IT
 }
 
 

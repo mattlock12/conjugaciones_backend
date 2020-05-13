@@ -77,13 +77,14 @@ class VerbWeighter(models.Model):
         if not self.id:
             return
 
-        # avoid division by zero errors on intial create or in the case that stupid losers can't get any correct
-        incorrect_correct_ratio = 0
-        if self.total_correct:
-            incorrect_correct_ratio = self.total_incorrect / self.total_correct
+        correct_ratio_weight = 0
+        total_attempts = self.total_correct + self.total_incorrect
+        # don't use correct_ratio_weight if they haven't attempted
+        if total_attempts:
+            correct_ratio = self.total_correct / total_attempts
+            correct_ratio_weight = 50 - (50 * correct_ratio)
 
         times_seen_weight = min(50, 50 * (5 / (self.times_seen + 5)))
-        correct_ratio_weight = min(50, 50 * (incorrect_correct_ratio))
         self.weight = times_seen_weight + correct_ratio_weight
 
     def save(self, *args, **kwargs):

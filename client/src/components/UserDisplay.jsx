@@ -18,7 +18,7 @@ const UserDisplay = ({ user, setUser, setUserToken, setShouldDisplay }) => {
           }>Logout</div>
         </>
         :
-        <div onClick={ () => setShouldDisplay(LOGIN_FORM) }>Login / Signup</div>
+        <div onClick={() => setShouldDisplay(LOGIN_FORM)}>Login / Signup</div>
      }
      </div>
   )
