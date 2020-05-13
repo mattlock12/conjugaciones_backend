@@ -4,13 +4,6 @@ from verbs.models import Verb, VerbWeighter
 from users.models import ConjugacionesUser
 
 
-WEIRD_MOODS = [
-    'Imperative Affirmative',
-    'Imperative Negative',
-    'Subjunctive',
-]
-
-
 class Command(BaseCommand):
     help = 'Create VerbWeighters for a User'
 
