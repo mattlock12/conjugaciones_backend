@@ -14,6 +14,8 @@ services:
     volumes:
       - ./static:/www/static
       - ./data/nginx/app.prod.conf:/etc/nginx/nginx.conf
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /etc/nginx/sites-enabled:/etc/nginx/sites-enabled
     ports:
       - 80:80
       - 443:443
