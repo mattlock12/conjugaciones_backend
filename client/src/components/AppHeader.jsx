@@ -19,11 +19,10 @@ padding-left: 50px;
 padding-right: 50px;
 color: white;
 
-transition: .3s margin-left ease;
-
+transition: .3s ease;
 
 .first-row {
- display: flex;
+  display: flex;
   align-items: center;
 }
 
@@ -33,10 +32,6 @@ transition: .3s margin-left ease;
   font-size: 1.2rem;
   font-weight: 600;
   right: 25px;
-}
-
-@media (max-width: 900px) {
-  padding-left: 20px;
 }
 
 .language-selector {
@@ -63,7 +58,39 @@ transition: .3s margin-left ease;
     }
   }
 }
+
+@media (max-width: 900px) {
+  width: auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 100px;
+
+  transform: translateX(${props => props.isOpen ? 0 : '-309px'});
+
+  padding-left: 20px;
+}
 `
+
+const MobileOpener = styled.div`
+display: none;
+
+@media (max-width: 900px) {
+  color: white;
+  position: absolute;
+  display: ${props => props.isOpen ? 'none' : 'block'};
+  background: ${FIERY_ROSE};
+  height: 29px;
+  width: 35px;
+  left: 5px;
+  top: 8px;
+  text-align: center;
+  border-radius: 100px;
+  padding-top: 5px;
+}
+`
+
 
 const AppHeader = ({
   language,
@@ -75,6 +102,11 @@ const AppHeader = ({
   const [ isOpen, toggleIsOpen ] = useState(true);
 
   return (
+    <>
+    <MobileOpener
+      isOpen={isOpen}
+      onClick={() => toggleIsOpen(true)}
+    >{language}</MobileOpener>
     <StyledAppHeader isOpen={isOpen}>
       <div className='first-row'>
         <h1 id='logo'>Entend.ió</h1>
@@ -113,6 +145,7 @@ const AppHeader = ({
         toggleSelectedTense={toggleSelectedTense}
       />
       </StyledAppHeader>
+      </>
   );
 }
 

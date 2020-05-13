@@ -6,11 +6,12 @@ import ConjugationForm from './ConjugationForm';
 
 
 const StyledContainer = styled.div`
+  display: grid;
+  grid-template-rows: 100px 1fr;
+  overflow: hidden;
   background: #f7f7f7;
-  padding-left: 25px;
   width: 100%;
   height: 100%;
-  overflow: scroll;
 
   @media (max-width: 900px) {
     padding: 0 20px;
@@ -18,32 +19,37 @@ const StyledContainer = styled.div`
 `
 
 const StyledInfinitiveHeader = styled.div`
+  overflow: hidden;
   background: white;
   display: flex;
   align-items: center;
-  margin-left: -25px;
   padding-left: 25px;
-  padding-top: 30px;
+  padding-top: 10px;
   margin-bottom: 15px;
   box-shadow: 1px 1px 3px #424242;
 
   #infinitive-organizer {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    width: 100%;
     padding: 5px 0;
   }
 
+  #infinitive-top {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 50% 50%;
+    margin-bottom: 5px;
+  }
+
   #infinitive {
+    flex-grow: 1;
     font-weight: 600;
     font-size: 28px;
   }
 
-  #infinitive-english {
-    margin-left: 20px;
-  }
-
   #next-button {
-    margin-left: 50px;
+    margin-left: 5px;
     font-size: 17px;
     border: 1px solid gray;
     border-radius: 10px;
@@ -60,10 +66,7 @@ const StyledInfinitiveHeader = styled.div`
   }
 
   @media (max-width: 900px) {
-    #infinitive-organizer {
-      flex-direction: column;
-      align-items: flex-start;
-    }
+    padding-top: 7px;
 
     #infinitive-english {
       margin-left: 0;
@@ -71,20 +74,27 @@ const StyledInfinitiveHeader = styled.div`
     }
 
     #next-button {
-      width: 100px;
-      font-size: 28px;
+      width: 75px;
+      font-size: 16px;
     }
   }
 `
 
 const ConjugationFormList = styled.div`
+  padding-left: 25px;
+  background: #f7f7f7;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
-  background: #f7f7f7;
+  overflow: scroll;
+
+  @media (max-width: 900px) {
+    padding-left: 0;
+  }
 `
 
 const ConjugationFormHolder = styled.div`
+  height: 276px;
   background: white;
   margin: 20px;
   margin-left: 0px;
@@ -95,6 +105,7 @@ const ConjugationFormHolder = styled.div`
   font-size: 1rem;
 
   @media (max-width: 900px) {
+    height: 340px;
     margin: 5px 0;
     margin-left: 5px;
     font-size: 1rem;
@@ -178,27 +189,31 @@ const VerbContainer = ({ language, tenses, user }) => {
       {
         isLoading || !verb ?
         <h1>Loading Some Verbs</h1> :
-        <div>
+        <>
           <StyledInfinitiveHeader>
             <div id='infinitive-organizer'>
-              <div id='infinitive'>{ verb.infinitive.toLowerCase() }</div>
-              <div id='infinitive-english'>({ verb.infinitiveEnglish.toLowerCase() })</div>
-            </div>
-            <div
-              id='next-button'
-              onClick={() => {
-                if (user) {
-                   submitConjugations({ user, verb, answersByTense });
-                 }
-                setAnswersByTense({});
+              <div id='infinitive-top'>
+                <div id='infinitive'>{ verb.infinitive.toLowerCase() }</div>
+                <div
+                  id='next-button'
+                  onClick={() => {
+                    if (user) {
+                      submitConjugations({ user, verb, answersByTense });
+                    }
+                    setAnswersByTense({});
 
-                if (idx >= verbsLength - 1) {
-                 setIdx(0);
-                 setVerbs([]);
-                } else {
-                  setIdx(idx + 1);
-                }
-            }}>next >></div>
+                    if (idx >= verbsLength - 1) {
+                    setIdx(0);
+                    setVerbs([]);
+                    } else {
+                      setIdx(idx + 1);
+                    }
+                  }}>next >></div>
+              </div>
+              <div id='infinitive-bottom'>
+                <div id='infinitive-english'>({ verb.infinitiveEnglish.toLowerCase() })</div>
+              </div>
+            </div>
           </StyledInfinitiveHeader>
           <ConjugationFormList>
           {
@@ -228,7 +243,7 @@ const VerbContainer = ({ language, tenses, user }) => {
             ))
           }
           </ConjugationFormList>
-        </div>
+        </>
       }
     </StyledContainer>
   );

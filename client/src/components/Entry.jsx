@@ -14,9 +14,6 @@ const StyledEntry = styled.div`
 height: 100%;
 
 display: flex;
-  @media (max-width: 900px) {
-    width: 90%;
-  }
 `
 
 const Entry = ({
