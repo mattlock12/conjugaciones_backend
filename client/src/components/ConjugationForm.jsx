@@ -55,7 +55,7 @@ const Answer = styled.p`
 `
 
 const CheckButton = styled.button`
-  display: ${props => props.isMobile ? 'default' : 'none' };
+  display: none;
   width: 100%;
   border: 1px solid gray;
   border-radius: 8px;
@@ -69,6 +69,10 @@ const CheckButton = styled.button`
     border: 1px solid #2dd251;
     color: white;
     cursor: pointer;
+  }
+
+  @media (max-width: 900px) {
+    display: block;
   }
 `
 
@@ -128,12 +132,7 @@ const ConjugationForm = ({ verbConjugations, verb, tense, language, answersByTen
                 </Field>
               </FormLine>
             ))}
-            <MediaQuery query="(min-device-width: 901px)">
-              <CheckButton isMobile={false}>Check</CheckButton>
-            </MediaQuery>
-            <MediaQuery query="(max-device-width: 900px)">
-              <CheckButton isMobile={true}>Check</CheckButton>
-            </MediaQuery>
+            <CheckButton>Check</CheckButton>
           </form>
         )
       }
