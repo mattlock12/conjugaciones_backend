@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Form, Field } from 'react-final-form'
 import styled from 'styled-components';
+import MediaQuery from 'react-responsive';
 
 import { LANGUAGE_TO_LABELS } from '../constants/Constants';
 
@@ -54,6 +55,7 @@ const Answer = styled.p`
 `
 
 const CheckButton = styled.button`
+  display: none;
   width: 100%;
   border: 1px solid gray;
   border-radius: 8px;
@@ -68,6 +70,10 @@ const CheckButton = styled.button`
     color: white;
     cursor: pointer;
   }
+
+  @media (max-width: 900px) {
+    display: block;
+  }
 `
 
 
@@ -80,18 +86,19 @@ const checkAnswer = (verbConjugations, values, form, cb) => {
 };
 
 
-const ConjugationForm = ({ verbConjugations, verb, tense, language }) => {
-  const [points, setPoints] = useState(0);
-
+const ConjugationForm = ({ verbConjugations, verb, tense, language, answersByTense, setAnswersByTense }) => {
   return (
     <Form
       key={ `${verb.infinitive}${tense}` }
       onSubmit={(values, form, cb) => {
-        setPoints(1);
+        const oldAnswers = answersByTense[tense] || {};
+        const newAnswers = {...values, ...oldAnswers};
+        setAnswersByTense({ ...answersByTense, [tense]: newAnswers });
+
         return checkAnswer(verbConjugations, values, form, cb);
       }}
       render={
-        ({ handleSubmit, values }) =>(
+        ({ handleSubmit }) => (
           <form id="search___" onSubmit={handleSubmit} autoComplete={ 'off' }>
           {
             Object.keys(verbConjugations).map(person => (

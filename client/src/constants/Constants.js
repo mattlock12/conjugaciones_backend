@@ -30,6 +30,37 @@ export const DEFAULT_TENSES_ES = {
   "Imperfecto - Subjuntivo": false,
 }
 
+export const TENSES_WITH_CATEGORIES_ES = {
+  "Presente": [
+    "Presente",
+    "Presente - Imperativo",
+    "Presente perfecto",
+    "Presente - Subjuntivo",
+    "Presente perfecto - Subjuntivo"
+  ],
+  "Imperfecto": [
+    "Imperfecto",
+    "Imperfecto - Subjuntivo"
+  ],
+  "Pretérito": [
+    "Pretérito",
+    "Pretérito anterior"
+  ],
+  "Condicional": [
+    "Condicional",
+    "Condicional perfecto"
+  ],
+  "Futuro": [
+    "Futuro",
+    "Futuro perfecto",
+    "Futuro - Subjuntivo",
+    "Futuro perfecto - Subjuntivo"
+  ],
+  "Pluscuamperfecto": [
+    "Pluscuamperfecto",
+    "Pluscuamperfecto - Subjuntivo"
+  ]
+}
 
 // Italiano
 export const PERSON_TO_LABEL_IT = {
@@ -60,11 +91,43 @@ export const DEFAULT_TENSES_IT = {
   'TRAPASSATO CONGIUNTIVO': false
 };
 
+export const TENSES_WITH_CATEGORIES_IT = {
+  'PRESENTE': [
+    'PRESENTE',
+    'PRESENTE CONDIZIONALE',
+    'PRESENTE CONGIUNTIVO',
+    'IMPERATIVO'
+  ],
+  'PASSATO': [
+    'PASSATO PROSSIMO',
+    'PASSATO CONDIZIONALE',
+    'PASSATO CONGIUNTIVO',
+    'PASSATO REMOTO'
+  ],
+  'IMPERFETTO': [
+    'IMPERFETTO',
+    'IMPERFETTO CONGIUNTIVO'
+  ],
+  'FUTURO': [
+    'FUTURO SEMPLICE',
+    'FUTURO ANTERIORE',
+  ],
+  'TRAPASSATO': [
+    'TRAPASSATO PROSSIMO',
+    'TRAPASSATO REMOTO',
+    'TRAPASSATO CONGIUNTIVO'
+  ]
+}
 
 export const LANGUAGE_TO_TENSES = {
   ES: DEFAULT_TENSES_ES,
   IT: DEFAULT_TENSES_IT
 };
+
+export const TENSES_WITH_CATEGORIES_BY_LANGUAGE = {
+  ES: TENSES_WITH_CATEGORIES_ES,
+  IT: TENSES_WITH_CATEGORIES_IT
+}
 
 
 export const LANGUAGE_TO_LABELS = {

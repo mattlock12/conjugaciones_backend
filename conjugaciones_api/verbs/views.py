@@ -1,12 +1,12 @@
 import random
 
 from django.core.cache import caches
-from rest_framework import response, viewsets
+from rest_framework import generics, status, response, viewsets
 
 from .constants import MOST_COMMON_INFINITIVES_BY_LANGUAGE
-from .models import Verb
-from .serializers import VerbSerializer
-
+from .models import Verb, VerbWeighter
+from .serializers import VerbSerializer, VerbResponseSerializer
+from users.models import ConjugacionesUser
 
 MOST_COMMON_TEMPLATE = '__%s__most_common'
 
@@ -47,10 +47,24 @@ class VerbsViewSet(viewsets.ReadOnlyModelViewSet):
 
         language = Verb.Languages(language_str)
 
-        verbs = self._get_random_verbs(language=language)
-        verbs += random.sample(self._get_most_common(language=language), 25)
-        # random.shuffle mutates the list
-        random.shuffle(verbs)
+        user = None
+        auth_header = request.headers.get('Authorization', None)
+        if auth_header and 'Token' in auth_header:
+            auth_token = auth_header.split(' ')[1].strip()
+            if auth_token:
+                user = ConjugacionesUser.for_token_key(key=auth_token)
+
+        if user:
+            verbs = [
+                vw.verb for vw in
+                VerbWeighter.heaviest_verbs(user=user, language=language, num_verbs=50)
+            ]
+        else:
+            verbs = self._get_random_verbs(language=language)
+            most_common = self._get_most_common(language=language)
+            verbs += random.sample(most_common, min(len(most_common), 50))
+            # random.shuffle mutates the list
+            random.shuffle(verbs)
 
         serializer = self.get_serializer(
             data=verbs,
@@ -59,3 +73,47 @@ class VerbsViewSet(viewsets.ReadOnlyModelViewSet):
         serializer.is_valid()
 
         return response.Response(data=serializer.data, status=200)
+
+class VerbResponseViewSet(generics.GenericAPIView):
+
+    def post(self, request):
+        request_user = request.data.get('user')
+        if not request_user:
+            return response.Response(data="No user provided", status=status.HTTP_400_BAD_REQUEST)
+
+        user = ConjugacionesUser.objects.filter(email=request_user.get('email')).first()
+        if not user:
+            return response.Response(data="No user with provided email", status=status.HTTP_400_BAD_REQUEST)
+
+        verb = Verb.objects.get(id=request.data.get('verb_id'))
+        conjugations_by_tense = {
+            c.tense: c
+            for c in verb.verb_conjugations()
+        }
+        vr_serializer = VerbResponseSerializer(data=request.data)
+        answers_by_tense = vr_serializer.answers_by_tense
+
+        total_correct = 0
+        total_incorrect = 0
+        for tense, answers_this_tense in answers_by_tense.items():
+            conjugation_this_tense = conjugations_by_tense[tense]
+            for form, answer in answers_this_tense.items():
+                if form == 'tense':
+                    continue
+                form_for_model = form.replace('form', 'form_')
+                correct_answer = getattr(conjugation_this_tense, form_for_model, None)
+                if not correct_answer:
+                    raise Exception("No form %s form Verb %s" % (form_for_model, verb.infinitive))
+
+                if answer.lower() == correct_answer.lower():
+                    total_correct += 1
+                else:
+                    total_incorrect += 1
+
+        weighter = VerbWeighter.objects.get_or_create(verb=verb, user=user)[0]
+        weighter.total_correct += total_correct
+        weighter.total_incorrect += total_incorrect
+        weighter.times_seen += 1
+        weighter.save()
+
+        return response.Response(data={'weight': weighter.weight}, status=200)
