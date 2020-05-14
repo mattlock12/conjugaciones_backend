@@ -13,7 +13,7 @@ const StyledForm = styled.div`
   width: 100%;
 
   form {
-    width: 500px;
+    width: 300px;
     margin: 25px auto;
     display: flex;
     flex-direction: column;
@@ -101,7 +101,7 @@ const Login = ({ setUser, setUserToken, setShouldDisplay }) => {
         const domain = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost';
         const urlBase = formType === LOGIN ? '/api/login/' : '/api/users/';
         const url = `${protocol}://${domain}${urlBase}`;
-        return submitLoginData({ values, url, setUser, setUserToken, setShouldDisplay });
+        return submitLoginData({ values: { ...values, 'username': values.email }, url, setUser, setUserToken, setShouldDisplay });
       }}
       validate={formType === SIGNUP ? validateSignup : _ => ({}) }
       render={

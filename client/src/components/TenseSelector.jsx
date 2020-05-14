@@ -12,8 +12,13 @@ import {
 
 
 const TenseSelectorStyles = styled.div`
+margin-top: 20px;
 width: 100%;
 
+.tense-selector-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
 .tense-selector-body {
   display: flex;
   flex-direction: column;

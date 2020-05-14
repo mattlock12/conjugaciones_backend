@@ -1,8 +1,11 @@
+from django.contrib.auth import authenticate
+
 from rest_framework import generics, response, status, views, viewsets
 from rest_framework.authtoken.models import Token
 
 from .models import ConjugacionesUser
 from .serializers import UserSerializer
+from verbs.models import VerbWeighter, Verb
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -31,7 +34,13 @@ class UsersViewSet(viewsets.ModelViewSet):
         if not password or not confirmpassword or password != confirmpassword:
            return response.Response(data={'errors': ["Invalid data"]}, status=status.HTTP_400_BAD_REQUEST)
 
-        return super(UsersViewSet, self).create(request)
+        username = request.data.get('email', None)
+        user = ConjugacionesUser.objects.create_user(username, request.data.get('email'), request.data.get('password'))
+        for verb in Verb.objects.all():
+            VerbWeighter.objects.create(verb=verb, user=user)
+
+        serializer = self.get_serializer(user)
+        return response.Response(data=serializer.data, status=200)
 
 
 class LoginViewSet(generics.GenericAPIView):
@@ -39,9 +48,10 @@ class LoginViewSet(generics.GenericAPIView):
 
     def post(self, request):
         email = request.data.get('email', None)
-        user = ConjugacionesUser.objects.filter(email=email).first()
+        password = request.data.get('password', None)
+        user = authenticate(username=email, password=password)
         if not user:
-           return response.Response(data={'errors': ["Invalid email"]}, status=status.HTTP_400_BAD_REQUEST)
+           return response.Response(data={'errors': ["Invalid login"]}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(user)
         return response.Response(data=serializer.data, status=200)

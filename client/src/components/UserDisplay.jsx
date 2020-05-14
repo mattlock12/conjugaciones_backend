@@ -1,16 +1,33 @@
 import React from 'react';
+import styled from 'styled-components';
 
 import { LOGIN_FORM } from './Entry';
+import { TURQUOISE } from '../constants/StyleConstants'
+
+const StyledUserDisplay = styled.div`
+display: grid;
+grid-template-columns: 50% 1fr;
+width: 100%;
+
+.user-display-action {
+  cursor: pointer;
+  :hover {
+    color: ${TURQUOISE};
+  }
+}
+
+`
 
 
 const UserDisplay = ({ user, setUser, setUserToken, setShouldDisplay }) => {
   return (
-    <div id='user-display-container'>
+    <StyledUserDisplay>
      {
       user ?
         <>
-          <div>{user.email}</div>
+          <div id='username'>{user.email}</div>
           <div
+            className='user-display-action'
             onClick={() => {
               setUser(null);
               setUserToken(null)
@@ -18,9 +35,12 @@ const UserDisplay = ({ user, setUser, setUserToken, setShouldDisplay }) => {
           }>Logout</div>
         </>
         :
-        <div onClick={() => setShouldDisplay(LOGIN_FORM)}>Login / Signup</div>
+        <div
+          className='user-display-action'
+          onClick={() => setShouldDisplay(LOGIN_FORM)}
+        >Login / Signup</div>
      }
-     </div>
+     </StyledUserDisplay>
   )
 };
 
