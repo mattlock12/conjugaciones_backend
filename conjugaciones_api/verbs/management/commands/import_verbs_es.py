@@ -24,7 +24,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Importing verbs from %s" % filename))
 
         verb_list  = list(csv.reader(open(filename, 'r')))
-        verb_ids_by_infinitive = {}
+        verb_ids_by_infinitive = {v.infinitive: v.id for v in Verb.objects.all()}
         saved_verbs = 0
         saved_conjugation = 0
         tenses = set()
