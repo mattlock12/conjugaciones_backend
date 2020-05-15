@@ -56,9 +56,8 @@ class Command(BaseCommand):
             if mood_english in WEIRD_MOODS:
                 if mood_english in ['Imperative Affirmative', 'Imperative Negative']:
                     if mood_english == 'Subjunctive':
+                        print("WTF I thought imperative/subjunctive didn't happen...")
                         continue
-                    else:
-                        mood = 'Imperativo'
                 tense = "%s - %s" % (tense, mood)
                 tenses.add(tense)
 

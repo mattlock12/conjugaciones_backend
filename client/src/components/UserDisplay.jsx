@@ -6,7 +6,7 @@ import { TURQUOISE } from '../constants/StyleConstants'
 
 const StyledUserDisplay = styled.div`
 display: grid;
-grid-template-columns: 50% 1fr;
+grid-template-columns: 1.5fr 1fr;
 width: 100%;
 
 .user-display-action {

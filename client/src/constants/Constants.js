@@ -11,7 +11,8 @@ export const PERSON_TO_LABEL_ES = {
 
 export const DEFAULT_TENSES_ES = {
   "Presente": true,
-  "Presente - Imperativo": false,
+  "Presente - Imperativo Afirmativo": false,
+  "Presente - Imperativo Negativo": false,
   "Presente perfecto": false,
   "Pretérito": true,
   "Futuro": true,
@@ -33,7 +34,8 @@ export const DEFAULT_TENSES_ES = {
 export const TENSES_WITH_CATEGORIES_ES = {
   "Presente": [
     "Presente",
-    "Presente - Imperativo",
+    "Presente - Imperativo Afirmativo",
+    "Presente - Imperativo Negativo",
     "Presente perfecto",
     "Presente - Subjuntivo",
     "Presente perfecto - Subjuntivo"
