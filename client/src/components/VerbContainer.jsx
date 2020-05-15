@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { capitalize } from 'lodash';
 
@@ -170,7 +170,14 @@ function submitConjugations ({ user, verb, answersByTense }) {
   );
 };
 
+
+const scrollToRef = ref => ref.current.scrollIntoView();
+
+
 const VerbContainer = ({ language, tenses, user }) => {
+  const verbListRef = useRef(null);
+  const executeScroll = () => scrollToRef(verbListRef);
+
   const [answersByTense, setAnswersByTense] = useState({});
   const [isLoading, setLoading] = useState(true);
   const [verbs, setVerbs] = useState([])
@@ -183,6 +190,7 @@ const VerbContainer = ({ language, tenses, user }) => {
 
   const verb = verbs[idx];
   const verbsLength = verbs.length;
+
 
   return (
     <StyledContainer>
@@ -208,6 +216,7 @@ const VerbContainer = ({ language, tenses, user }) => {
                     } else {
                       setIdx(idx + 1);
                     }
+                    executeScroll();
                   }}>next >></div>
               </div>
               <div id='infinitive-bottom'>
@@ -216,6 +225,7 @@ const VerbContainer = ({ language, tenses, user }) => {
             </div>
           </StyledInfinitiveHeader>
           <ConjugationFormList>
+           <div ref={verbListRef}></div>
           {
             tenses && Object.keys(tenses).filter(t => tenses[t]).map((tense, tIdx) => (
               (
