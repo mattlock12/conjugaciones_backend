@@ -10,7 +10,8 @@ import TenseSelector from './TenseSelector';
 const StyledAppHeader = styled.div`
 position: relative;
 margin-left: ${props => props.isOpen ? '0px' : '-400px'};
-display: flex;
+display: grid;
+grid-template-rows: 70px 1fr;
 width: 400px;
 flex-direction: column;
 align-items: flex-start;
@@ -21,9 +22,16 @@ color: white;
 
 transition: .3s ease;
 
-.first-row {
+#first-row {
   display: flex;
   align-items: center;
+  width: 100%;
+}
+
+#second-row {
+  width: 100%;
+  display: grid;
+  grid-template-rows: 15px 1fr;
 }
 
 .open-toggler {
@@ -31,7 +39,7 @@ transition: .3s ease;
   cursor: pointer;
   font-size: 1.2rem;
   font-weight: 600;
-  right: 25px;
+  right: 10px;
 }
 
 .language-selector {
@@ -108,7 +116,7 @@ const AppHeader = ({
       onClick={() => toggleIsOpen(true)}
     >{language}</MobileOpener>
     <StyledAppHeader isOpen={isOpen}>
-      <div className='first-row'>
+      <div id='first-row'>
         <h1 id='logo'>Entend.ió</h1>
         <div className='language-selector'>
           <a
@@ -137,13 +145,15 @@ const AppHeader = ({
         }
         </div>
       </div>
-      { children }
-      <TenseSelector
-        language={language}
-        tenses={tenses}
-        tensesWithCategories={tensesWithCategories}
-        toggleSelectedTense={toggleSelectedTense}
-      />
+      <div id='second-row'>
+        { children }
+        <TenseSelector
+          language={language}
+          tenses={tenses}
+          tensesWithCategories={tensesWithCategories}
+          toggleSelectedTense={toggleSelectedTense}
+        />
+      </div>
       </StyledAppHeader>
       </>
   );

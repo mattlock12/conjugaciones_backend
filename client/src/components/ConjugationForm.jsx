@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Form, Field } from 'react-final-form'
 import styled from 'styled-components';
 import MediaQuery from 'react-responsive';
@@ -86,7 +86,7 @@ const checkAnswer = (verbConjugations, values, form, cb) => {
 };
 
 
-const ConjugationForm = ({ verbConjugations, verb, tense, language, answersByTense, setAnswersByTense }) => {
+const ConjugationForm = ({ verbConjugations, verb, tense, shouldAutoFocus, language, answersByTense, setAnswersByTense }) => {
   return (
     <Form
       key={ `${verb.infinitive}${tense}` }
@@ -115,13 +115,17 @@ const ConjugationForm = ({ verbConjugations, verb, tense, language, answersByTen
                 <PersonLabel>{LANGUAGE_TO_LABELS[language][person]}</PersonLabel>
                 <Field name={person}>
                     {({ input, meta }) => {
+                      const autoFocus = person === 'form1s' && shouldAutoFocus;
                       const hasSubmitted = meta.submitFailed || meta.submitSucceeded;
-                      const wasAttempted = hasSubmitted && input.value && meta.visited && meta.touched;
+                      const wasAttempted = hasSubmitted && input.value && input.value.trim().length > 0;
                       const shouldShow = meta.dirtySinceLastSubmit ? false : wasAttempted;
                       const showError = meta.submitError && wasAttempted;
                       return (
                         <InputContainer>
-                          <FormInput {...input} type="text" />
+                          <FormInput
+                            {...input}
+                            autoFocus={autoFocus}
+                            type="text" />
                           <Answer
                             shouldShow={shouldShow}
                             showError={showError}

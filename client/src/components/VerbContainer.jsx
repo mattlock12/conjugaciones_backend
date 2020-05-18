@@ -94,7 +94,7 @@ const ConjugationFormList = styled.div`
 `
 
 const ConjugationFormHolder = styled.div`
-  height: 276px;
+  min-height: 276px;
   background: white;
   margin: 20px;
   margin-left: 0px;
@@ -191,7 +191,6 @@ const VerbContainer = ({ language, tenses, user }) => {
   const verb = verbs[idx];
   const verbsLength = verbs.length;
 
-
   return (
     <StyledContainer>
       {
@@ -238,6 +237,7 @@ const VerbContainer = ({ language, tenses, user }) => {
                 <ConjugationForm
                   idx={ tIdx }
                   key={ `${tense}CF` }
+                  shouldAutoFocus={ tIdx == 0 }
                   verb={ verbs[idx] }
                   tense={ tense }
                   language={language}

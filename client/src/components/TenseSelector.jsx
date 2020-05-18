@@ -14,15 +14,31 @@ import {
 const TenseSelectorStyles = styled.div`
 margin-top: 20px;
 width: 100%;
+display: grid;
+grid-template-rows: 25px 1fr;
+position: fixed;
+top: 100px;
+bottom: 0;
+width: 345px;
+
+@media (max-width: 900px) {
+  width: 80%;
+}
 
 .tense-selector-title {
   font-weight: 600;
   font-size: 1.1rem;
 }
 .tense-selector-body {
-  display: flex;
-  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: scroll;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  scrollbar-width: none;
 }
+
 
 .tense-category-holder {
   display: flex;
