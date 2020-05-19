@@ -14,16 +14,13 @@ import {
 const TenseSelectorStyles = styled.div`
 margin-top: 20px;
 width: 100%;
+height: 70%;
 display: grid;
 grid-template-rows: 25px 1fr;
 position: fixed;
 top: 100px;
 bottom: 0;
 width: 345px;
-
-@media (max-width: 900px) {
-  width: 80%;
-}
 
 .tense-selector-title {
   font-weight: 600;
@@ -57,6 +54,19 @@ width: 345px;
   flex-wrap: wrap;
   margin-bottom: 5px;
 }
+
+@media (max-width: 900px) {
+  left: 20px;
+  width: 80%;
+  margin-top: 10px;
+  height: 100%;
+
+  .tense-selector-body {
+    height: auto;
+    padding-bottom: 200px;
+  }
+}
+
 `
 const Tense = styled.div`
 text-align: center;

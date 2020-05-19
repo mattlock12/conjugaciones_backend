@@ -31,7 +31,7 @@ transition: .3s ease;
 #second-row {
   width: 100%;
   display: grid;
-  grid-template-rows: 15px 1fr;
+  grid-template-rows: 20px 1fr;
 }
 
 .open-toggler {

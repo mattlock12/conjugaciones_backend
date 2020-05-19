@@ -94,7 +94,7 @@ const ConjugationFormList = styled.div`
 `
 
 const ConjugationFormHolder = styled.div`
-  min-height: 276px;
+  height: 276px;
   background: white;
   margin: 20px;
   margin-left: 0px;
@@ -105,7 +105,8 @@ const ConjugationFormHolder = styled.div`
   font-size: 1rem;
 
   @media (max-width: 900px) {
-    height: 340px;
+    min-height: 340px;
+    height: auto;
     margin: 5px 0;
     margin-left: 5px;
     font-size: 1rem;

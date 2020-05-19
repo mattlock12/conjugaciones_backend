@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { Form, Field } from 'react-final-form'
 import styled from 'styled-components';
-import MediaQuery from 'react-responsive';
 
 import { LANGUAGE_TO_LABELS } from '../constants/Constants';
 
