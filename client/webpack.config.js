@@ -1,5 +1,4 @@
 const path = require('path');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
@@ -8,14 +7,16 @@ module.exports = {
     entry: './src/index.js',
     devtool: 'inline-source-map',
     devServer: {
-        contentBase: './dist',
+        static: {
+            directory: './dist'
+        },
         hot: true,
         port: 9000
     },
     module: {
         rules: [
             {
-                test: /\.jsx?$/,
+                test: /\.(ts|js)x?$/,
                 exclude: /node_modules/,
                 use: {
                     loader: 'babel-loader'
@@ -24,15 +25,17 @@ module.exports = {
         ]
     },
     resolve: {
-        extensions: ['.js', '.jsx']
+        extensions: ['.js', '.jsx', '.ts', '.tsx']
     },
     plugins: [
-        new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             'title': 'Entendió',
             'hash': true,
             'template': './src/index.html'
-        })
+        }),
+        new ForkTsCheckerWebpackPlugin({
+            async: false,
+        }),
     ],
     output: {
         filename: 'static/[name][hash].bundle.js',
