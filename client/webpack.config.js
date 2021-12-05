@@ -16,7 +16,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.jsx?$/,
+                test: /\.(ts|js)x?$/,
                 exclude: /node_modules/,
                 use: {
                     loader: 'babel-loader'
@@ -25,14 +25,17 @@ module.exports = {
         ]
     },
     resolve: {
-        extensions: ['.js', '.jsx']
+        extensions: ['.js', '.jsx', '.ts', '.tsx']
     },
     plugins: [
         new HtmlWebpackPlugin({
             'title': 'Entendió',
             'hash': true,
             'template': './src/index.html'
-        })
+        }),
+        new ForkTsCheckerWebpackPlugin({
+            async: false,
+        }),
     ],
     output: {
         filename: 'static/[name][hash].bundle.js',
