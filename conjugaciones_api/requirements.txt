@@ -7,7 +7,7 @@ django-redis==5.1.0
 djangorestframework==3.12.4
 djangorestframework-camel-case==1.2.0
 ipdb==0.13.2
-ipython==7.14.0
+ipython==7.16.3
 ipython-genutils==0.2.0
 jedi==0.17.0
 parso==0.7.0
