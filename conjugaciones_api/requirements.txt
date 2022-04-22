@@ -1,7 +1,7 @@
 asgiref==3.4.1
 backcall==0.1.0
 decorator==5.1.0
-Django==3.2.9
+Django==3.2.13
 django-cors-headers==3.10.0
 django-redis==5.1.0
 djangorestframework==3.12.4
