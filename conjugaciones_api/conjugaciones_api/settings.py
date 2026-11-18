@@ -29,7 +29,7 @@ ALLOWED_HOSTS = [
     "*"
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Application definition
@@ -137,8 +137,6 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_L10N = True
-
 USE_TZ = True
 
 
@@ -148,6 +146,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'users.ConjugacionesUser'
+
+# Existing tables use 32-bit integer primary keys.
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
