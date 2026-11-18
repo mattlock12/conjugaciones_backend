@@ -123,8 +123,9 @@ const ConjugationTense = styled.div`
 function fetchVerbs ({ language, setVerbs, setLoading, setIdx, user }) {
   const verbsUrl = process.env.NODE_ENV === 'production' ? 'entend.io' : 'localhost';
   const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  setLoading(true);
   return fetch(
-    `${protocol}://${verbsUrl}/api/verbs?l=${language}`,
+    `${protocol}://${verbsUrl}/api/verbs/?l=${language}`,
     {
       redirect: 'follow',
       headers: user && user.token ?
@@ -135,7 +136,11 @@ function fetchVerbs ({ language, setVerbs, setLoading, setIdx, user }) {
     })
     .then(
       resp => resp.json().then(rResp => {
-        setVerbs(rResp);;
+        if (!resp.ok || !Array.isArray(rResp)) {
+          console.error('Failed fetching verbs', rResp);
+          rResp = [];
+        }
+        setVerbs(rResp);
         setLoading(false);
         setIdx(0);
       }),
@@ -152,7 +157,7 @@ function submitConjugations ({ user, verb, answersByTense }) {
   const url = `${protocol}://${verbsUrl}/api/responses/` ;
 
   const answers = Object.keys(answersByTense || {}).map(tense => ({ ...answersByTense[tense], tense }));
-  const payLoad = { user, verbId: verb.id, answers };
+  const payLoad = { verbId: verb.id, answers };
   fetch(
     url,
     {
@@ -160,7 +165,7 @@ function submitConjugations ({ user, verb, answersByTense }) {
       cache: 'no-cache',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': user.token,
+        'Authorization': `Token ${user.token}`,
       },
       redirect: 'follow',
       body: JSON.stringify(payLoad)
@@ -183,11 +188,12 @@ const VerbContainer = ({ language, tenses, user }) => {
   const [isLoading, setLoading] = useState(true);
   const [verbs, setVerbs] = useState([])
   const [idx, setIdx] = useState(0)
+  // bumped to fetch a fresh batch once the current one is exhausted
+  const [batch, setBatch] = useState(0);
+  const userToken = user && user.token;
   useEffect(() => {
-    if (idx === 0) {
-      fetchVerbs({ language, setVerbs, setLoading, setIdx, user });
-    }
-  }, [idx]);
+    fetchVerbs({ language, setVerbs, setLoading, setIdx, user });
+  }, [batch, language, userToken]);
 
   const verb = verbs[idx];
   const verbsLength = verbs.length;
@@ -211,8 +217,7 @@ const VerbContainer = ({ language, tenses, user }) => {
                     setAnswersByTense({});
 
                     if (idx >= verbsLength - 1) {
-                    setIdx(0);
-                    setVerbs([]);
+                      setBatch(batch + 1);
                     } else {
                       setIdx(idx + 1);
                     }
@@ -233,7 +238,7 @@ const VerbContainer = ({ language, tenses, user }) => {
                   verbs[idx].verbConjugations.find(v => v.tense.toLowerCase() === tense.toLowerCase()) || {}
                 ).some(v => v)
               ) &&
-              <ConjugationFormHolder key={`${tense}${verbs[idx]}`} >
+              <ConjugationFormHolder key={`${tense}${verb.id}`} >
                 <ConjugationTense key={`${tense}tense`}>{capitalize(tense)}</ConjugationTense>
                 <ConjugationForm
                   idx={ tIdx }

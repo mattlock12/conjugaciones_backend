@@ -48,6 +48,7 @@ transition: .3s ease;
   color: white;
 
   .language {
+    color: inherit;
     text-decoration: none;
     margin-left: 10px;
     font-size: 20px;

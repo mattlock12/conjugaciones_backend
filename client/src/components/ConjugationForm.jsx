@@ -91,7 +91,7 @@ const ConjugationForm = ({ verbConjugations, verb, tense, shouldAutoFocus, langu
       key={ `${verb.infinitive}${tense}` }
       onSubmit={(values, form, cb) => {
         const oldAnswers = answersByTense[tense] || {};
-        const newAnswers = {...values, ...oldAnswers};
+        const newAnswers = { ...oldAnswers, ...values };
         setAnswersByTense({ ...answersByTense, [tense]: newAnswers });
 
         return checkAnswer(verbConjugations, values, form, cb);

@@ -92,7 +92,7 @@ export default ({ tenses, tensesWithCategories, toggleSelectedTense }) => (
     <div className='tense-selector-body'>
     {
       tenses && tensesWithCategories && Object.keys(tensesWithCategories).map(category =>
-        <div className='tense-category-holder'>
+        <div className='tense-category-holder' key={category}>
           <div className='tense-category-name'>{category}</div>
           <div className='tense-category-tenses'>
           {
