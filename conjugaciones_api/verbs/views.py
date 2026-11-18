@@ -1,70 +1,71 @@
 import random
 
 from django.core.cache import caches
-from rest_framework import generics, permissions, status, response, viewsets
+from django.db.models import prefetch_related_objects
+from rest_framework import generics, permissions, response, status, viewsets
 
 from .constants import MOST_COMMON_INFINITIVES_BY_LANGUAGE
 from .models import Verb, VerbWeighter
 from .serializers import VerbSerializer, VerbResponseSerializer
 
-MOST_COMMON_TEMPLATE = '__%s__most_common'
+# v2: entries now hold verb ids rather than pickled model instances, and the
+# old key may hold a list built from the misspelled infinitives in constants.
+MOST_COMMON_TEMPLATE = '__%s__most_common_v2'
+RANDOM_VERB_COUNT = 25
+NUM_VERBS = 50
 
 
 class VerbsViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Verb.objects.all()
+    queryset = Verb.objects.prefetch_related('verbconjugation_set')
     serializer_class = VerbSerializer
 
     def _get_most_common(self, language):
         rcache = caches['redis']
 
         cache_key = MOST_COMMON_TEMPLATE % language
-        cache_results = rcache.get(cache_key)
-        if cache_results:
-            return cache_results
+        verb_ids = rcache.get(cache_key)
+        if verb_ids is None:
+            verb_ids = list(
+                Verb.objects
+                .filter(language=language, infinitive__in=MOST_COMMON_INFINITIVES_BY_LANGUAGE[language])
+                .values_list('id', flat=True)
+            )
+            rcache.set(cache_key, verb_ids, None)
 
-        most_common_infinitives = MOST_COMMON_INFINITIVES_BY_LANGUAGE[language]
-        most_common = Verb.objects.filter(infinitive__in=most_common_infinitives)
-        most_common_list = list(most_common)
-
-        rcache.set(cache_key, most_common_list, None)
-
-        return most_common_list
+        return list(Verb.objects.filter(id__in=verb_ids))
 
     def _get_random_verbs(self, language):
-        verb_count = Verb.objects.filter(language=language).count() - 26
-        rand_idx = random.randint(0, verb_count)
+        verbs = Verb.objects.filter(language=language).order_by('id')
+        start = random.randint(0, max(0, verbs.count() - RANDOM_VERB_COUNT))
 
-        return [v for v in Verb.objects.filter(language=language)[rand_idx:(rand_idx + 25)]]
+        return list(verbs[start:start + RANDOM_VERB_COUNT])
 
     def list(self, request):
-        language_str = self.request.query_params.get('l', None)
-        if not language_str:
+        try:
+            language = Verb.Languages(request.query_params.get('l', '').upper())
+        except ValueError:
             return response.Response(
                 data={'errors': ['Bad language str in query']},
-                status=400
+                status=status.HTTP_400_BAD_REQUEST
             )
-
-        language = Verb.Languages(language_str)
 
         if request.user.is_authenticated:
             verbs = [
                 vw.verb for vw in
-                VerbWeighter.heaviest_verbs(user=request.user, language=language, num_verbs=50)
+                VerbWeighter.heaviest_verbs(user=request.user, language=language, num_verbs=NUM_VERBS)
             ]
         else:
             verbs = self._get_random_verbs(language=language)
             most_common = self._get_most_common(language=language)
-            verbs += random.sample(most_common, min(len(most_common), 50))
+            verbs += random.sample(most_common, min(len(most_common), NUM_VERBS))
             # random.shuffle mutates the list
             random.shuffle(verbs)
 
-        serializer = self.get_serializer(
-            data=verbs,
-            many=True,
-        )
-        serializer.is_valid()
+        prefetch_related_objects(verbs, 'verbconjugation_set')
+        serializer = self.get_serializer(verbs, many=True)
 
         return response.Response(data=serializer.data, status=200)
+
 
 class VerbResponseViewSet(generics.GenericAPIView):
     serializer_class = VerbResponseSerializer
