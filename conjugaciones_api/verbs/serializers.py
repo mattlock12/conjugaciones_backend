@@ -1,9 +1,6 @@
 from rest_framework import serializers
 
 from .models import Verb, VerbConjugation
-from users.serializers import UserSerializer
-
-
 
 class VerbConjugationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,13 +28,3 @@ class AnswerSerializer(serializers.Serializer):
 
 class VerbResponseSerializer(serializers.Serializer):
     answers = AnswerSerializer(many=True)
-    user = UserSerializer()
-
-    @property
-    def answers_by_tense(self):
-        self.is_valid(raise_exception=True)
-
-        return {
-            answer['tense']: answer
-            for answer in self.validated_data['answers']
-        }

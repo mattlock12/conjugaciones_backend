@@ -1,12 +1,11 @@
 import random
 
 from django.core.cache import caches
-from rest_framework import generics, status, response, viewsets
+from rest_framework import generics, permissions, status, response, viewsets
 
 from .constants import MOST_COMMON_INFINITIVES_BY_LANGUAGE
 from .models import Verb, VerbWeighter
 from .serializers import VerbSerializer, VerbResponseSerializer
-from users.models import ConjugacionesUser
 
 MOST_COMMON_TEMPLATE = '__%s__most_common'
 
@@ -47,17 +46,10 @@ class VerbsViewSet(viewsets.ReadOnlyModelViewSet):
 
         language = Verb.Languages(language_str)
 
-        user = None
-        auth_header = request.headers.get('Authorization', None)
-        if auth_header and 'Token' in auth_header:
-            auth_token = auth_header.split(' ')[1].strip()
-            if auth_token:
-                user = ConjugacionesUser.for_token_key(key=auth_token)
-
-        if user:
+        if request.user.is_authenticated:
             verbs = [
                 vw.verb for vw in
-                VerbWeighter.heaviest_verbs(user=user, language=language, num_verbs=50)
+                VerbWeighter.heaviest_verbs(user=request.user, language=language, num_verbs=50)
             ]
         else:
             verbs = self._get_random_verbs(language=language)
@@ -75,42 +67,45 @@ class VerbsViewSet(viewsets.ReadOnlyModelViewSet):
         return response.Response(data=serializer.data, status=200)
 
 class VerbResponseViewSet(generics.GenericAPIView):
+    serializer_class = VerbResponseSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        request_user = request.data.get('user')
-        if not request_user:
-            return response.Response(data="No user provided", status=status.HTTP_400_BAD_REQUEST)
-
-        user = ConjugacionesUser.objects.filter(email=request_user.get('email')).first()
-        if not user:
-            return response.Response(data="No user with provided email", status=status.HTTP_400_BAD_REQUEST)
-
-        verb = Verb.objects.get(id=request.data.get('verb_id'))
+        verb = generics.get_object_or_404(Verb, id=request.data.get('verb_id'))
         conjugations_by_tense = {
-            c.tense: c
+            c.tense.lower(): c
             for c in verb.verb_conjugations()
         }
-        vr_serializer = VerbResponseSerializer(data=request.data)
-        answers_by_tense = vr_serializer.answers_by_tense
+
+        vr_serializer = self.get_serializer(data=request.data)
+        vr_serializer.is_valid(raise_exception=True)
 
         total_correct = 0
         total_incorrect = 0
-        for tense, answers_this_tense in answers_by_tense.items():
-            conjugation_this_tense = conjugations_by_tense[tense]
+        for answers_this_tense in vr_serializer.validated_data['answers']:
+            conjugation_this_tense = conjugations_by_tense.get(answers_this_tense['tense'].lower())
+            if conjugation_this_tense is None:
+                continue
+
             for form, answer in answers_this_tense.items():
                 if form == 'tense':
                     continue
-                form_for_model = form.replace('form', 'form_')
-                correct_answer = getattr(conjugation_this_tense, form_for_model, None)
-                if not correct_answer:
-                    raise Exception("No form %s form Verb %s" % (form_for_model, verb.infinitive))
 
-                if answer.lower() == correct_answer.lower():
+                answer = answer.strip()
+                # blank answers are unfinished: neither correct nor incorrect
+                if not answer:
+                    continue
+
+                correct_answer = getattr(conjugation_this_tense, form.replace('form', 'form_'), None)
+                if not correct_answer:
+                    continue
+
+                if answer.lower() == correct_answer.strip().lower():
                     total_correct += 1
                 else:
                     total_incorrect += 1
 
-        weighter = VerbWeighter.objects.get_or_create(verb=verb, user=user)[0]
+        weighter = VerbWeighter.objects.get_or_create(verb=verb, user=request.user)[0]
         weighter.total_correct += total_correct
         weighter.total_incorrect += total_incorrect
         weighter.times_seen += 1
