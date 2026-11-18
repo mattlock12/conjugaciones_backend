@@ -1,10 +1,9 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const webpack = require('webpack');
+const { merge } = require('webpack-merge');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const common = require('./webpack.common.js');
 
-module.exports = {
+module.exports = merge(common, {
     mode: 'development',
-    entry: './src/index.js',
     devtool: 'inline-source-map',
     devServer: {
         static: {
@@ -19,26 +18,19 @@ module.exports = {
                 test: /\.(ts|js)x?$/,
                 exclude: /node_modules/,
                 use: {
-                    loader: 'babel-loader'
+                    loader: 'babel-loader',
+                    options: {
+                        plugins: ['react-refresh/babel']
+                    }
                 }
             }
         ]
     },
-    resolve: {
-        extensions: ['.js', '.jsx', '.ts', '.tsx']
-    },
     plugins: [
-        new HtmlWebpackPlugin({
-            'title': 'Entendió',
-            'hash': true,
-            'template': './src/index.html'
-        }),
-        new ForkTsCheckerWebpackPlugin({
-            async: false,
-        }),
+        new ReactRefreshWebpackPlugin(),
     ],
     output: {
-        filename: 'static/[name][hash].bundle.js',
-        path: path.resolve(__dirname, 'dist')
+        // contenthash is incompatible with HMR
+        filename: 'static/[name].bundle.js'
     }
-};
+});

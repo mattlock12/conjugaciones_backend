@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { hot } from 'react-hot-loader';
 
 import Entry from './Entry';
 
@@ -45,4 +44,4 @@ const App = () => {
   );
 }
 
-export default hot(module)(App);
+export default App;

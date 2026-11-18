@@ -11,7 +11,7 @@ width: 100%;
 
 .user-display-action {
   cursor: pointer;
-  :hover {
+  &:hover {
     color: ${TURQUOISE};
   }
 }

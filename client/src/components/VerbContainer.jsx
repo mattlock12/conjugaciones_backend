@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 
 import ConjugationForm from './ConjugationForm';
 
@@ -217,7 +217,7 @@ const VerbContainer = ({ language, tenses, user }) => {
                       setIdx(idx + 1);
                     }
                     executeScroll();
-                  }}>next >></div>
+                  }}>next {'>>'}</div>
               </div>
               <div id='infinitive-bottom'>
                 <div id='infinitive-english'>({ verb.infinitiveEnglish.toLowerCase() })</div>

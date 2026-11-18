@@ -9,7 +9,7 @@ import TenseSelector from './TenseSelector';
 
 const StyledAppHeader = styled.div`
 position: relative;
-margin-left: ${props => props.isOpen ? '0px' : '-400px'};
+margin-left: ${props => props.$isOpen ? '0px' : '-400px'};
 display: grid;
 grid-template-rows: 70px 1fr;
 width: 400px;
@@ -54,7 +54,7 @@ transition: .3s ease;
     border-top: 2px solid transparent;
     border-bottom: 2px solid transparent;
 
-    :visited {
+    &:visited {
       color: white;
     }
 
@@ -75,7 +75,7 @@ transition: .3s ease;
   bottom: 0;
   right: 100px;
 
-  transform: translateX(${props => props.isOpen ? 0 : '-309px'});
+  transform: translateX(${props => props.$isOpen ? 0 : '-309px'});
 
   padding-left: 20px;
 }
@@ -87,7 +87,7 @@ display: none;
 @media (max-width: 900px) {
   color: white;
   position: absolute;
-  display: ${props => props.isOpen ? 'none' : 'block'};
+  display: ${props => props.$isOpen ? 'none' : 'block'};
   background: ${FIERY_ROSE};
   height: 29px;
   width: 35px;
@@ -112,10 +112,10 @@ const AppHeader = ({
   return (
     <>
     <MobileOpener
-      isOpen={isOpen}
+      $isOpen={isOpen}
       onClick={() => toggleIsOpen(true)}
     >{language}</MobileOpener>
-    <StyledAppHeader isOpen={isOpen}>
+    <StyledAppHeader $isOpen={isOpen}>
       <div id='first-row'>
         <h1 id='logo'>Entend.ió</h1>
         <div className='language-selector'>
