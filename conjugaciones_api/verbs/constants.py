@@ -76,11 +76,11 @@ MOST_COMMON_ES = {
     'servir',
     'formar',
     'suponer',
-    'ganar    ',
+    'ganar',
     'tener',
     'gustar',
     'terminar',
-    'haber    ',
+    'haber',
     'tocar',
     'hablar',
     'tomar',
@@ -99,7 +99,7 @@ MOST_COMMON_ES = {
     'llamar',
     'vivir',
     'llegar',
-     'volver'
+    'volver'
 }
 
 MOST_COMMON_INFINITIVES_BY_LANGUAGE = {

@@ -23,8 +23,8 @@ const Entry = ({
 }) => {
   const [shouldDisplay, setShouldDisplay] = useState(VERB_CONTAINER);
 
-  let language = window.location.search.split('=')[1];
-  language = language ? language.toUpperCase() : 'ES';
+  const requestedLanguage = (new URLSearchParams(window.location.search).get('l') || '').toUpperCase();
+  const language = requestedLanguage in LANGUAGE_TO_TENSES ? requestedLanguage : 'ES';
   const savedTenses = JSON.parse(localStorage.getItem(`tenses__${language}`)) || {};
   const [selectedTenses, toggleSelectedTense] = useState({
     ...LANGUAGE_TO_TENSES[language],

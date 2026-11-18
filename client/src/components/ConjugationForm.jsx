@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Form, Field } from 'react-final-form'
 import styled from 'styled-components';
 
@@ -8,7 +8,7 @@ const FormLine = styled.div`
   align-items: center;
   display: flex;
   width: 100%;
-  visibility: ${props => props.shouldShow ? 'visible' : 'hidden'}
+  visibility: ${props => props.$shouldShow ? 'visible' : 'hidden'};
 `
 
 const PersonLabel = styled.label`
@@ -46,8 +46,8 @@ const FormInput = styled.input`
 
 const Answer = styled.p`
   height: auto;
-  visibility: ${props => props.shouldShow ? 'visible' : 'hidden'};
-  color: ${props => props.showError ? 'red' : 'green'};
+  visibility: ${props => props.$shouldShow ? 'visible' : 'hidden'};
+  color: ${props => props.$showError ? 'red' : 'green'};
   margin: 0px;
   margin-left: 7px;
   font-size: .8rem;
@@ -91,7 +91,7 @@ const ConjugationForm = ({ verbConjugations, verb, tense, shouldAutoFocus, langu
       key={ `${verb.infinitive}${tense}` }
       onSubmit={(values, form, cb) => {
         const oldAnswers = answersByTense[tense] || {};
-        const newAnswers = {...values, ...oldAnswers};
+        const newAnswers = { ...oldAnswers, ...values };
         setAnswersByTense({ ...answersByTense, [tense]: newAnswers });
 
         return checkAnswer(verbConjugations, values, form, cb);
@@ -104,7 +104,7 @@ const ConjugationForm = ({ verbConjugations, verb, tense, shouldAutoFocus, langu
               LANGUAGE_TO_LABELS[language][person] &&
               <FormLine
                 key={person}
-                shouldShow={
+                $shouldShow={
                   !(
                     tense.includes('Imperativo') &&
                     ['form1s', 'form1p'].includes(person) || !verbConjugations[person]
@@ -126,8 +126,8 @@ const ConjugationForm = ({ verbConjugations, verb, tense, shouldAutoFocus, langu
                             autoFocus={autoFocus}
                             type="text" />
                           <Answer
-                            shouldShow={shouldShow}
-                            showError={showError}
+                            $shouldShow={shouldShow}
+                            $showError={showError}
                           >{verbConjugations[person].toLowerCase()}</Answer>
                         </InputContainer>
                       );

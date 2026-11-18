@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { hot } from 'react-hot-loader';
 
 import Entry from './Entry';
 
@@ -20,12 +19,19 @@ const App = () => {
   useEffect(() => {
     if (userToken) {
       fetch(url, { headers: { "Authorization": `Token ${userToken}` }})
-        .then(resp => resp.json())
-        .then(jsonResp => {
-          localStorage.setItem(USERTOKEN_STORAGE_KEY, JSON.stringify(userToken));
-          setUser({ ...jsonResp });
-          setIsFetchingUser(false);
-        });
+        .then(resp => {
+          if (!resp.ok) {
+            // stale or invalid token: fall back to logged out
+            setUserToken(null);
+            return;
+          }
+          return resp.json().then(jsonResp => {
+            localStorage.setItem(USERTOKEN_STORAGE_KEY, JSON.stringify(userToken));
+            setUser({ ...jsonResp });
+          });
+        })
+        .catch(error => console.error('Failed fetching user', error))
+        .finally(() => setIsFetchingUser(false));
     } else {
       localStorage.removeItem(USERTOKEN_STORAGE_KEY);
       setIsFetchingUser(false);
@@ -45,4 +51,4 @@ const App = () => {
   );
 }
 
-export default hot(module)(App);
+export default App;

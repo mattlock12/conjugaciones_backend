@@ -1,5 +1,4 @@
-FROM node
-RUN mkdir /app
-COPY package* /app
+FROM node:26-slim
 WORKDIR /app
-RUN npm install
+COPY package.json package-lock.json /app/
+RUN npm ci

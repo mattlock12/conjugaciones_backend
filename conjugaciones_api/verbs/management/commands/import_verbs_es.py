@@ -23,7 +23,9 @@ class Command(BaseCommand):
         filename = options['file']
         self.stdout.write(self.style.SUCCESS("Importing verbs from %s" % filename))
 
-        verb_list  = list(csv.reader(open(filename, 'r')))
+        # the source CSVs start with a UTF-8 byte order mark
+        with open(filename, 'r', encoding='utf-8-sig', newline='') as f:
+            verb_list = list(csv.reader(f))
         verb_ids_by_infinitive = {v.infinitive: v.id for v in Verb.objects.all()}
         saved_verbs = 0
         saved_conjugation = 0

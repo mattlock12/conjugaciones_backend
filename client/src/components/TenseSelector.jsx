@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 
 import {
   FIERY_ROSE,
@@ -74,15 +74,15 @@ font-size:  12px;
 padding: 5px;
 border-radius: 7px;
 margin: 2px 2.5px;
-background: ${props => props.active ? TURQUOISE : FIERY_ROSE };
-color: ${props => props.active ? 'white' : 'white' };
-border: 1px solid ${props => props.active ? TURQUOISE : 'white' };
+background: ${props => props.$active ? TURQUOISE : FIERY_ROSE };
+color: white;
+border: 1px solid ${props => props.$active ? TURQUOISE : 'white' };
 
 &:hover {
   cursor: pointer;
   border: 1px solid white;
   background: white;
-  color: ${props => props.active ? TURQUOISE : FIERY_ROSE };
+  color: ${props => props.$active ? TURQUOISE : FIERY_ROSE };
 }
 `
 
@@ -92,7 +92,7 @@ export default ({ tenses, tensesWithCategories, toggleSelectedTense }) => (
     <div className='tense-selector-body'>
     {
       tenses && tensesWithCategories && Object.keys(tensesWithCategories).map(category =>
-        <div className='tense-category-holder'>
+        <div className='tense-category-holder' key={category}>
           <div className='tense-category-name'>{category}</div>
           <div className='tense-category-tenses'>
           {
@@ -102,8 +102,7 @@ export default ({ tenses, tensesWithCategories, toggleSelectedTense }) => (
                   <Tense
                     className='tense'
                     key={ t }
-                    name={ t }
-                    active={ tenses[t] }
+                    $active={ tenses[t] }
                     onClick={ () => toggleSelectedTense({ ...tenses, [t]: !tenses[t] }) }
                   >{ capitalize(t) }
                   </Tense>

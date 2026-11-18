@@ -27,25 +27,27 @@ React client to consume it
 }
 ```
 ## Getting Started
-1. Make sure you have `docker` and `docker-compose` installed on your machine
-    - To install docker: https://docs.docker.com/docker-for-mac/install/
-    - `brew install docker-compose`
-1. `docker-compose up --build -d`
-1. `docker ps` to find the container id of **conjugaciones-backend**
-1. `docker exec -it <conjugaciones-backend id> /bin/bash`
-1. from inside docker container:
-    - `python` (to open python interpreter)
-        - `from src.models import *`
-        - `from app import db`
-        - `db.create_all()`
-        - `db.session.commit()`
-        - `db.session.close()`
-        - `exit()`
-    - `export PYTHONPATH=.`
-    - `python scripts/verb_csv_importer.py ./verbs.csv`
-    - `python scripts/import_italian_verbs.py ./italian_verbs_2019_04_12.csv`
-1. backend is now served on `localhost:8000`
-1. react dev server is served on `localhost:9000`
+1. Install [Docker Desktop](https://docs.docker.com/desktop/) (includes `docker compose`)
+1. `docker compose up --build -d`
+1. Create the schema and load the verbs:
+    ```
+    docker compose exec backend python manage.py migrate
+    docker compose exec backend python manage.py import_verbs_es -f verb_csvs/spanish_verbs_001.csv
+    docker compose exec backend python manage.py import_verbs_it -f verb_csvs/italian_verbs_2019_04_12.csv
+    ```
+1. The API is served through nginx on `localhost` (`/api/...`)
+1. The React dev server (with fast refresh) is on `localhost:9000`
+
+### Tests
+`docker compose exec backend python manage.py test`
+
+### Production build
+`docker compose -f docker-compose.yml -f docker-compose.prod.yml up client` writes the bundle to `./static`, which nginx serves.
+
+### Upgrading an existing `./pgdata`
+The database now runs on Postgres 18, which stores its data under `./pgdata/18/docker`.
+Data from an older Postgres major version must be migrated, either with `pg_dump`/`pg_restore`
+or with `pg_upgrade`, before it can be used.
 
 
 USE: https://www.randomlists.com/data/spanish-words.json
