@@ -1,14 +1,19 @@
-version: "3"
 services:
   db:
-    image: postgres
+    image: postgres:18
     restart: always
     environment:
       POSTGRES_USER: 'conjugaciones-user'
       POSTGRES_PASSWORD: 'PASSWORD'
       POSTGRES_DB: 'conjugaciones'
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      # postgres 18+ images keep data in a versioned subdirectory of this path
+      - ./pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U conjugaciones-user -d conjugaciones"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
 
   client:
     build: ./client
@@ -18,6 +23,8 @@ services:
       - 9000:9000
     volumes:
       - ./client:/app
+      # keep the image's node_modules from being hidden by the ./client bind mount
+      - /app/node_modules
       - ./static:/app/dist
     command: ["npm", "run", "start"]
 
@@ -28,9 +35,12 @@ services:
     volumes:
       - ./conjugaciones_api:/app
     depends_on:
-      - db
-      - client
-      - redis
+      db:
+        condition: service_healthy
+      client:
+        condition: service_started
+      redis:
+        condition: service_started
     command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
   nginx:
@@ -48,4 +58,4 @@ services:
 
   redis:
     container_name: redis
-    image: redis
+    image: redis:8
