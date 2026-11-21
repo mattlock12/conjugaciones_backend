@@ -1,146 +1,267 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Form, Field } from 'react-final-form'
 import styled from 'styled-components';
 
-import { LANGUAGE_TO_LABELS } from '../constants/Constants';
+import { LANGUAGE_TO_LABELS, applicablePersons } from '../constants/Constants';
+import { isCorrectAnswer } from '../constants/Answers';
+import ProgressBar from './ProgressBar';
+import {
+  ACCENT,
+  ACCENT_TEXT,
+  ACCENT_SOFT,
+  FILL,
+  FILL_DISABLED,
+  SUCCESS,
+  SUCCESS_PRESSED,
+  SUCCESS_TEXT,
+  SUCCESS_SOFT,
+  LABEL,
+  SECONDARY_LABEL,
+  SEPARATOR,
+  TERTIARY_LABEL,
+} from '../constants/StyleConstants';
 
 const FormLine = styled.div`
+  display: grid;
+  grid-template-columns: 60px 1fr;
   align-items: center;
-  display: flex;
-  width: 100%;
-  visibility: ${props => props.$shouldShow ? 'visible' : 'hidden'};
+  column-gap: 10px;
+  padding: 6px 0;
+
+  &:not(:last-of-type) {
+    border-bottom: 0.5px solid ${SEPARATOR};
+  }
 `
 
 const PersonLabel = styled.label`
-  margin-right: 5px;
-  width: 40px;
-  font-size: .8rem;
-
-  @media (max-width: 900px) {
-  margin-right: 0px;
-  width: 40px;
-  font-weight: 400;
-  }
+  font-size: 14px;
+  color: ${props => props.$applicable ? SECONDARY_LABEL : TERTIARY_LABEL};
 `
 
 const InputContainer = styled.div`
   display: flex;
-  align-items: center;
-  padding: 4px;
-  width: 100%
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 `
 
+const STATE_BG = { correct: SUCCESS_SOFT, wrong: ACCENT_SOFT };
+const STATE_BORDER = { correct: SUCCESS, wrong: ACCENT };
+
 const FormInput = styled.input`
-  height: 20px;
-  width: 40%;
-  font-size: .8rem;
-  padding-left: 5px;
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid ${props => props.$na ? 'transparent' : STATE_BORDER[props.$state] || 'transparent'};
+  border-radius: 8px;
+  background: ${props => props.$na ? FILL_DISABLED : STATE_BG[props.$state] || FILL};
+  color: ${props => props.$na ? TERTIARY_LABEL : LABEL};
+  font: inherit;
+  font-size: 15px;
+
+  &::placeholder {
+    color: ${TERTIARY_LABEL};
+  }
+
+  &:disabled {
+    opacity: 1;
+    /* Safari otherwise greys out disabled text */
+    -webkit-text-fill-color: currentColor;
+    cursor: ${props => props.$na ? 'not-allowed' : 'default'};
+  }
 
   @media (max-width: 900px) {
-  height: 30px;
-  width: 50%;
-  border: 1px solid #c0c5d4;
-  border-radius: 8px;
+    height: 38px;
+    /* 16px stops iOS Safari zooming in on focus */
+    font-size: 16px;
   }
 `
 
 const Answer = styled.p`
-  height: auto;
-  visibility: ${props => props.$shouldShow ? 'visible' : 'hidden'};
-  color: ${props => props.$showError ? 'red' : 'green'};
-  margin: 0px;
-  margin-left: 7px;
-  font-size: .8rem;
+  display: ${props => props.$shouldShow ? 'block' : 'none'};
+  margin: 0 0 0 2px;
+  font-size: 13px;
+  font-weight: 500;
+  color: ${props => props.$showError ? ACCENT_TEXT : SUCCESS_TEXT};
 `
 
 const CheckButton = styled.button`
-  display: none;
+  display: block;
   width: 100%;
-  border: 1px solid gray;
-  border-radius: 8px;
-  font-size: 1rem;
+  margin-top: 10px;
+  padding: 11px;
+  border: none;
+  border-radius: 10px;
+  background: ${ACCENT_SOFT};
+  color: ${ACCENT_TEXT};
+  font-size: 15px;
   font-weight: 600;
-  padding: 15px;
-  margin-top: 5px;
+  cursor: pointer;
 
   &:hover {
-    background: #2dd251;
-    border: 1px solid #2dd251;
-    color: white;
-    cursor: pointer;
+    background: rgba(249, 102, 53, 0.24);
   }
+`
 
-  @media (max-width: 900px) {
-    display: block;
+const NextTenseButton = styled.button`
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 11px;
+  border: none;
+  border-radius: 10px;
+  background: ${SUCCESS};
+  color: ${LABEL};
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: ${SUCCESS_PRESSED};
   }
 `
 
 
-const checkAnswer = (verbConjugations, values, form, cb) => {
-  const results = {};
-  Object.keys(values).forEach(person => (
-    results[person] = values[person] && verbConjugations[person].toLowerCase().trim() !== values[person].toLowerCase().trim()
-  ))
-  cb(results);
+
+// the first unanswered box, or the Next Tense button once everything is right
+const focusFirstOpenInput = form => {
+  const input = form && form.querySelector('input:not([disabled]), button[data-next]');
+  if (input) {
+    // don't let focus scroll a pane that is still sliding into view
+    input.focus({ preventScroll: true });
+  }
 };
 
 
-const ConjugationForm = ({ verbConjugations, verb, tense, shouldAutoFocus, language, answersByTense, setAnswersByTense }) => {
+const ConjugationForm = ({ verbConjugations, tense, isActive, language, setAnswersByTense, onCompleteChange, onNext, nextLabel }) => {
+  const applicable = applicablePersons(language, tense, verbConjugations);
+  // persons answered correctly; these inputs are locked
+  const [locked, setLocked] = useState({});
+
+  const allCorrect = applicable.length > 0 && applicable.every(person => locked[person]);
+  const formRef = useRef(null);
+  // the progress bar: first-try correct answers since the last mistake
+  const [streak, setStreak] = useState(0);
+  const [failCount, setFailCount] = useState(0);
+  // persons answered wrong at least once; fixing them later doesn't add to the streak
+  const [missed, setMissed] = useState({});
+
+  useEffect(() => {
+    onCompleteChange(tense, allCorrect);
+  }, [allCorrect]);
+
+  // focus the first open box whenever this tense is shown
+  useEffect(() => {
+    if (isActive) {
+      focusFirstOpenInput(formRef.current);
+    }
+  }, [isActive]);
+
+  // a box that just locked loses focus; move on to the next open one
+  useEffect(() => {
+    const form = formRef.current;
+    const active = document.activeElement;
+    // browsers may still report the just-disabled input as active for a frame
+    if (isActive && form && (!form.contains(active) || active.disabled)) {
+      focusFirstOpenInput(form);
+    }
+  }, [locked]);
+
   return (
     <Form
-      key={ `${verb.infinitive}${tense}` }
-      onSubmit={(values, form, cb) => {
-        const oldAnswers = answersByTense[tense] || {};
-        const newAnswers = { ...oldAnswers, ...values };
-        setAnswersByTense({ ...answersByTense, [tense]: newAnswers });
+      onSubmit={values => {
+        setAnswersByTense(prev => ({ ...prev, [tense]: { ...(prev[tense] || {}), ...values } }));
 
-        return checkAnswer(verbConjugations, values, form, cb);
+        const errors = {};
+        const newlyCorrect = {};
+        applicable.forEach(person => {
+          const given = values[person];
+          // locked boxes keep their value but were already counted
+          if (locked[person] || !given || !given.trim()) {
+            return;
+          }
+          if (isCorrectAnswer(verbConjugations[person], given)) {
+            newlyCorrect[person] = true;
+          } else {
+            errors[person] = true;
+          }
+        });
+        setLocked(prev => ({ ...prev, ...newlyCorrect }));
+        if (Object.keys(errors).length > 0) {
+          setStreak(0);
+          setFailCount(count => count + 1);
+          setMissed(prev => ({ ...prev, ...errors }));
+        } else {
+          const firstTry = Object.keys(newlyCorrect).filter(person => !missed[person]).length;
+          setStreak(count => count + firstTry);
+        }
+
+        return errors;
       }}
+      // fields subscribe to their own state; without this the whole pane
+      // re-renders whenever focus moves between inputs
+      subscription={{}}
       render={
         ({ handleSubmit }) => (
-          <form id="search___" onSubmit={handleSubmit} autoComplete={ 'off' }>
+          <form ref={formRef} onSubmit={handleSubmit} autoComplete={ 'off' }>
           {
-            Object.keys(verbConjugations).map(person => (
-              LANGUAGE_TO_LABELS[language][person] &&
-              <FormLine
-                key={person}
-                $shouldShow={
-                  !(
-                    tense.includes('Imperativo') &&
-                    ['form1s', 'form1p'].includes(person) || !verbConjugations[person]
-                  )
-                }
-              >
-                <PersonLabel>{LANGUAGE_TO_LABELS[language][person]}</PersonLabel>
-                <Field name={person}>
+            Object.keys(LANGUAGE_TO_LABELS[language]).map(person => {
+              const isApplicable = applicable.includes(person);
+              const isLocked = !!locked[person];
+              return (
+              <FormLine key={person}>
+                <PersonLabel $applicable={isApplicable}>{LANGUAGE_TO_LABELS[language][person]}</PersonLabel>
+                {
+                  isApplicable ?
+                  <Field name={person}>
                     {({ input, meta }) => {
-                      const autoFocus = person === 'form1s' && shouldAutoFocus;
                       const hasSubmitted = meta.submitFailed || meta.submitSucceeded;
                       const wasAttempted = hasSubmitted && input.value && input.value.trim().length > 0;
-                      const shouldShow = meta.dirtySinceLastSubmit ? false : wasAttempted;
-                      const showError = meta.submitError && wasAttempted;
+                      const shouldShow = isLocked || (meta.dirtySinceLastSubmit ? false : wasAttempted);
+                      const showError = !isLocked && meta.submitError && wasAttempted;
                       return (
                         <InputContainer>
                           <FormInput
                             {...input}
-                            autoFocus={autoFocus}
+                            disabled={isLocked}
+                            spellCheck={false}
+                            $state={shouldShow ? (showError ? 'wrong' : 'correct') : null}
                             type="text" />
                           <Answer
                             $shouldShow={shouldShow}
                             $showError={showError}
-                          >{verbConjugations[person].toLowerCase()}</Answer>
+                          >{showError ? '✗ ' : '✓ '}{verbConjugations[person].toLowerCase()}</Answer>
                         </InputContainer>
                       );
                     }}
-                </Field>
+                  </Field> :
+                  <InputContainer>
+                    <FormInput
+                      type="text"
+                      disabled
+                      $na
+                      placeholder="—"
+                      title="Not applicable for this verb" />
+                  </InputContainer>
+                }
               </FormLine>
-            ))}
-            <CheckButton>Check</CheckButton>
+              );
+            })}
+            <ProgressBar
+              value={streak}
+              total={applicable.length}
+              failCount={failCount}
+            />
+            {
+              allCorrect ?
+                <NextTenseButton type="button" data-next onClick={onNext}>{nextLabel}</NextTenseButton> :
+                <CheckButton type="submit">Check</CheckButton>
+            }
           </form>
         )
       }
-    >
-    </Form>
+    />
   );
 }
 

@@ -136,3 +136,19 @@ export const LANGUAGE_TO_LABELS = {
   ES: PERSON_TO_LABEL_ES,
   IT: PERSON_TO_LABEL_IT
 };
+// A form is applicable only if it contains an actual word. Defective verbs
+// (e.g. Italian "bisognare") store placeholders like "—" for missing persons.
+const HAS_LETTER = /\p{L}/u;
+
+export const isApplicableForm = (tense, person, value) => (
+  typeof value === 'string' &&
+  HAS_LETTER.test(value) &&
+  // Spanish imperative has no yo / nosotros row in this app
+  !(tense.includes('Imperativo') && ['form1s', 'form1p'].includes(person))
+);
+
+export const applicablePersons = (language, tense, verbConjugations) => (
+  Object.keys(LANGUAGE_TO_LABELS[language] || {}).filter(person =>
+    isApplicableForm(tense, person, (verbConjugations || {})[person])
+  )
+);

@@ -4,51 +4,132 @@ import { FORM_ERROR } from 'final-form';
 import styled from 'styled-components';
 
 import { VERB_CONTAINER } from './Entry';
+import {
+  BACKGROUND,
+  ACCENT,
+  ACCENT_TEXT,
+  ACCENT_PRESSED,
+  ACCENT_SOFT,
+  FILL,
+  LABEL,
+  SUCCESS_TEXT,
+  PANE_SHADOW,
+  SECONDARY_LABEL,
+  SURFACE,
+} from '../constants/StyleConstants';
 
 
 const LOGIN = 'LOGIN';
 const SIGNUP = 'SIGNUP';
 
 const StyledForm = styled.div`
-  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 10vh 16px 40px;
+  background: ${BACKGROUND};
 
   form {
-    width: 300px;
-    margin: 25px auto;
+    width: 100%;
+    max-width: 360px;
     display: flex;
     flex-direction: column;
+    padding: 24px;
+    border-radius: 14px;
+    background: ${SURFACE};
+    box-shadow: ${PANE_SHADOW};
+  }
 
-    label {
-      font-size: .8rem;
+  .brand {
+    margin: 0 0 18px;
+    font-size: 15px;
+    font-weight: 700;
+    color: ${ACCENT_TEXT};
+
+    span {
+      color: ${SUCCESS_TEXT};
     }
   }
+
   .form-title {
-    font-size: 1.4rem;
-    font-weight: 600;
-    margin-bottom: 10px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 
   .form-subtitle {
-    margin-bottom: 10px;
+    align-self: flex-start;
+    margin: 4px 0 18px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: ${ACCENT_TEXT};
+    font-size: 14px;
     cursor: pointer;
 
     &:hover {
-      color: blue;
+      text-decoration: underline;
     }
   }
 
+  label {
+    margin: 10px 0 5px;
+    font-size: 13px;
+    font-weight: 500;
+    color: ${SECONDARY_LABEL};
+  }
+
+  input {
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: ${FILL};
+    color: ${LABEL};
+    font: inherit;
+    font-size: 16px;
+  }
+
   .button-holder {
-    margin-top: 10px;
     display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 22px;
 
     button {
-      margin-right: 25px;
+      height: 44px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: ${ACCENT};
+      color: ${LABEL};
+
+      &:hover {
+        background: ${ACCENT_PRESSED};
+      }
+    }
+
+    .secondary {
+      background: transparent;
+      color: ${ACCENT_TEXT};
+
+      &:hover {
+        background: ${ACCENT_SOFT};
+      }
     }
   }
 
   .error {
-    font-size: .8rem;
-    color: red;
+    margin-top: 4px;
+    font-size: 13px;
+    color: ${ACCENT_TEXT};
   }
 `
 
@@ -108,22 +189,25 @@ const Login = ({ setUser, setUserToken, setShouldDisplay }) => {
         ({ handleSubmit, submitError, pristine, invalid }) => (
           <StyledForm>
             <form onSubmit={handleSubmit}>
+              <div className='brand'>Entend<span>.ió</span></div>
               {
                 formType === LOGIN ?
                 <>
-                  <div className='form-title'>Login</div>
-                  <div
+                  <div className='form-title'>Log in</div>
+                  <button
+                    type='button'
                     className='form-subtitle'
                     onClick={ () => setFormType(SIGNUP) }
-                   >Or Create an Account here</div>
+                  >New here? Create an account</button>
                 </>
                 :
                 <>
                   <div className='form-title'>Create an Account</div>
-                  <div
+                  <button
+                    type='button'
                     className='form-subtitle'
                     onClick={ () => setFormType(LOGIN) }
-                  >Or Login here</div>
+                  >Already have an account? Log in</button>
                 </>
               }
               <div className='error'>{submitError}</div>
@@ -132,7 +216,7 @@ const Login = ({ setUser, setUserToken, setShouldDisplay }) => {
               {({ input, meta }) => (
                 <>
                   { meta.error && meta.touched && <div className='error'>{meta.error}</div> }
-                  <input type='text' { ...input } />
+                  <input type='email' autoComplete='email' { ...input } />
                 </>
               )}
               </Field>
@@ -163,8 +247,14 @@ const Login = ({ setUser, setUserToken, setShouldDisplay }) => {
               </Field>
               </div>
               <div className='button-holder'>
-                <button>Login</button>
-                <div onClick={ () => setShouldDisplay(VERB_CONTAINER) } >Cancel</div>
+                <button type='submit' className='primary'>
+                  { formType === LOGIN ? 'Log in' : 'Create account' }
+                </button>
+                <button
+                  type='button'
+                  className='secondary'
+                  onClick={ () => setShouldDisplay(VERB_CONTAINER) }
+                >Cancel</button>
               </div>
             </form>
           </StyledForm>

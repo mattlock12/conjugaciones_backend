@@ -11,10 +11,12 @@ export const VERB_CONTAINER = 'VERB_CONTAINER';
 export const LOGIN_FORM = 'LOGIN_FORM';
 
 const StyledEntry = styled.div`
-height: 100%;
-
-display: flex;
+  height: 100%;
+  display: flex;
+  overflow: hidden;
 `
+
+const startsOpen = () => !window.matchMedia || window.matchMedia('(min-width: 901px)').matches;
 
 const Entry = ({
   setUserToken,
@@ -22,6 +24,8 @@ const Entry = ({
   user
 }) => {
   const [shouldDisplay, setShouldDisplay] = useState(VERB_CONTAINER);
+  // open by default on desktop; on phones the sidebar is a slide-over sheet
+  const [isSidebarOpen, setIsSidebarOpen] = useState(startsOpen);
 
   const requestedLanguage = (new URLSearchParams(window.location.search).get('l') || '').toUpperCase();
   const language = requestedLanguage in LANGUAGE_TO_TENSES ? requestedLanguage : 'ES';
@@ -55,6 +59,8 @@ const Entry = ({
         tenses={selectedTenses}
         tensesWithCategories={TENSES_WITH_CATEGORIES_BY_LANGUAGE[language]}
         toggleSelectedTense={toggleSelectedTense}
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
       >
         <UserDisplay
           user={user}
@@ -67,6 +73,8 @@ const Entry = ({
         language={language}
         tenses={selectedTenses}
         user={user}
+        isSidebarOpen={isSidebarOpen}
+        openSidebar={() => setIsSidebarOpen(true)}
       />
     </StyledEntry>
   )
