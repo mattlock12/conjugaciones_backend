@@ -1,9 +1,15 @@
+import random
+from collections import Counter
+from datetime import timedelta
+
+import django.utils.timezone as dtz
 from django.test import override_settings
 from rest_framework.test import APITestCase
 
 from users.models import ConjugacionesUser
 from .constants import MOST_COMMON_ES
-from .models import Verb, VerbConjugation, VerbWeighter
+from .answers import is_correct
+from .models import MIN_WEIGHT, Verb, VerbConjugation, VerbWeighter, compute_weight
 
 LOCMEM_CACHES = {
     'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', 'LOCATION': 'default'},
@@ -71,15 +77,108 @@ class VerbListTests(APITestCase):
         resp = self.client.get(self.url, {'l': 'ES'}, HTTP_AUTHORIZATION='Token deadbeef')
         self.assertEqual(resp.status_code, 401)
 
-    def test_authenticated_user_gets_heaviest_verbs(self):
+    def test_authenticated_user_gets_weighted_sample(self):
         user = ConjugacionesUser.objects.create_user('a@example.com', 'a@example.com', 'pw')
-        heavy = make_verb('hablar')
-        light = make_verb('comer')
+        make_verb('hablar')
+        make_verb('comer')
         make_verb('parlare', language='IT')
-        VerbWeighter.objects.create(user=user, verb=heavy, weight=90)
-        VerbWeighter.objects.create(user=user, verb=light, weight=10)
         resp = self.client.get(self.url, {'l': 'ES'}, HTTP_AUTHORIZATION=f'Token {user.token}')
-        self.assertEqual([v['infinitive'] for v in resp.json()], ['hablar', 'comer'])
+        self.assertEqual(sorted(v['infinitive'] for v in resp.json()), ['comer', 'hablar'])
+
+    def test_user_without_weighters_still_gets_full_batch(self):
+        user = ConjugacionesUser.objects.create_user('a@example.com', 'a@example.com', 'pw')
+        for i in range(60):
+            make_verb(f'verbo{i}')
+        resp = self.client.get(self.url, {'l': 'ES'}, HTTP_AUTHORIZATION=f'Token {user.token}')
+        self.assertEqual(len(resp.json()), 50)
+
+
+def make_weighter(user, verb, correct_reviews=0, wrong_reviews=0, ago=timedelta(days=60)):
+    vw = VerbWeighter.objects.create(user=user, verb=verb)
+    for _ in range(wrong_reviews):
+        vw.record_review(0, 6)
+    for _ in range(correct_reviews):
+        vw.record_review(6, 0)
+    VerbWeighter.objects.filter(pk=vw.pk).update(last_updated=dtz.now() - ago)
+    vw.refresh_from_db()
+    return vw
+
+
+class ComputeWeightTests(APITestCase):
+    def setUp(self):
+        self.user = ConjugacionesUser.objects.create_user('a@example.com', 'a@example.com', 'pw')
+        self.now = dtz.now()
+
+    def test_struggling_beats_unseen_beats_mastered(self):
+        struggling = make_weighter(self.user, make_verb('verbo1'), wrong_reviews=4)
+        mastered = make_weighter(self.user, make_verb('verbo2'), correct_reviews=4, ago=timedelta(minutes=30))
+        w_struggling = compute_weight(struggling, False, self.now)
+        w_unseen = compute_weight(None, False, self.now)
+        w_mastered = compute_weight(mastered, False, self.now)
+        self.assertGreater(w_struggling, w_unseen)
+        self.assertGreater(w_unseen, w_mastered)
+
+    def test_recent_mistakes_outweigh_old_ones(self):
+        recovered = VerbWeighter.objects.create(user=self.user, verb=make_verb('verbo1'))
+        for _ in range(5):
+            recovered.record_review(0, 6)
+        for _ in range(3):
+            recovered.record_review(6, 0)
+        self.assertGreater(recovered.accuracy, 0.6)
+
+    def test_common_beats_rare(self):
+        self.assertGreater(compute_weight(None, True, self.now), compute_weight(None, False, self.now))
+        vw = make_weighter(self.user, make_verb('verbo1'), wrong_reviews=2)
+        self.assertGreater(compute_weight(vw, True, self.now), compute_weight(vw, False, self.now))
+
+    def test_just_answered_is_suppressed_until_due(self):
+        vw = make_weighter(self.user, make_verb('verbo1'), wrong_reviews=2, ago=timedelta(0))
+        just_now = compute_weight(vw, False, self.now)
+        later = compute_weight(vw, False, self.now + timedelta(days=1))
+        self.assertLess(just_now * 10, later)
+
+    def test_weight_never_below_floor(self):
+        vw = make_weighter(self.user, make_verb('verbo1'), correct_reviews=20, ago=timedelta(0))
+        self.assertGreaterEqual(compute_weight(vw, False, self.now), MIN_WEIGHT)
+
+
+class SampleVerbsTests(APITestCase):
+    def setUp(self):
+        self.user = ConjugacionesUser.objects.create_user('a@example.com', 'a@example.com', 'pw')
+
+    def _counts(self, trials=2000, k=5):
+        rng = random.Random(1234)
+        counts = Counter()
+        for _ in range(trials):
+            counts.update(v.infinitive for v in
+                          VerbWeighter.sample_verbs(self.user, 'ES', num_verbs=k, rng=rng))
+        return counts
+
+    def test_struggle_and_common_verbs_are_favoured_but_mastered_still_appear(self):
+        common = sorted(MOST_COMMON_ES)[:3]
+        for inf in common:
+            make_verb(inf)
+        for i in range(20):
+            make_verb(f'raro{i}')
+        make_weighter(self.user, make_verb('dificil'), wrong_reviews=4)
+        make_weighter(self.user, make_verb('facil'), correct_reviews=4, ago=timedelta(hours=1))
+
+        counts = self._counts()
+        rare_avg = sum(counts[f'raro{i}'] for i in range(20)) / 20
+        common_avg = sum(counts[inf] for inf in common) / len(common)
+
+        self.assertGreater(counts['dificil'], 2 * rare_avg)
+        self.assertGreater(common_avg, 2 * rare_avg)
+        self.assertLess(counts['facil'], rare_avg)
+        self.assertGreater(counts['facil'], 0)
+
+    def test_batches_vary(self):
+        for i in range(30):
+            make_verb(f'verbo{i}')
+        rng = random.Random(1)
+        batches = {tuple(v.id for v in VerbWeighter.sample_verbs(self.user, 'ES', num_verbs=10, rng=rng))
+                   for _ in range(5)}
+        self.assertGreater(len(batches), 1)
 
 
 class VerbResponseTests(APITestCase):
@@ -119,8 +218,64 @@ class VerbResponseTests(APITestCase):
         weighter = VerbWeighter.objects.get(user=self.user, verb=self.verb)
         self.assertEqual((weighter.total_correct, weighter.total_incorrect), (0, 0))
 
+    def test_placeholder_forms_are_not_scored(self):
+        verb = make_verb('bisognare', language='IT', form_1s='—', form_3s='bisogna')
+        self._post([{'tense': 'Presente', 'form1s': 'bisogno', 'form3s': 'bisogna'}], verb_id=verb.id, **self.auth)
+        weighter = VerbWeighter.objects.get(user=self.user, verb=verb)
+        self.assertEqual((weighter.total_correct, weighter.total_incorrect), (1, 0))
+
     def test_unknown_verb_is_404(self):
         self.assertEqual(self._post([], verb_id=999999, **self.auth).status_code, 404)
 
     def test_invalid_payload_is_400(self):
         self.assertEqual(self._post([{'form1s': 'hablo'}], **self.auth).status_code, 400)
+
+    def test_review_updates_recency_weighted_history(self):
+        self._post([{'tense': 'Presente', 'form1s': 'hablo', 'form2s': 'mal'}], **self.auth)
+        weighter = VerbWeighter.objects.get(user=self.user, verb=self.verb)
+        self.assertAlmostEqual(weighter.decayed_score, 0.5)
+        self.assertAlmostEqual(weighter.decayed_count, 1.0)
+        self.assertIsNotNone(weighter.last_updated)
+
+
+class AnswerMatchingTests(APITestCase):
+    def assertAccepts(self, expected, *answers):
+        for answer in answers:
+            self.assertTrue(is_correct(expected, answer), f'{answer!r} should match {expected!r}')
+
+    def assertRejects(self, expected, *answers):
+        for answer in answers:
+            self.assertFalse(is_correct(expected, answer), f'{answer!r} should not match {expected!r}')
+
+    def test_plain_form(self):
+        self.assertAccepts('HABLO', 'hablo', ' Hablo ')
+        self.assertRejects('HABLO', '', 'habla', 'hablo, habla')
+
+    def test_comma_alternatives(self):
+        self.assertAccepts('MORIRÒ, MORRÒ', 'morirò', 'morrò')
+        self.assertAccepts('PERSE, PERDÉ, PERDETTE', 'perse', 'perdé', 'perdette')
+        self.assertAccepts("VA, VAI, VA'", 'va', 'vai', "va'", 'va’')
+        self.assertRejects('MORIRÒ, MORRÒ', 'morirò, morrò', 'moriro')
+
+    def test_short_alternative_reuses_leading_words(self):
+        self.assertAccepts('HO PERSO, PERDUTO', 'ho perso', 'ho perduto', 'ho  perduto')
+        self.assertRejects('HO PERSO, PERDUTO', 'perduto', 'perso')
+
+    def test_gendered_endings(self):
+        self.assertAccepts('MI SONO PREOCCUPATO/A', 'mi sono preoccupato', 'mi sono preoccupata')
+        self.assertAccepts('CI SIAMO PREOCCUPATI/E', 'ci siamo preoccupati', 'ci siamo preoccupate')
+        self.assertRejects('MI SONO PREOCCUPATO/A', 'mi sono preoccupato/a', 'mi sono preoccupati', 'preoccupato')
+
+    def test_optional_letters(self):
+        self.assertAccepts('MI M(U)OVEVO', 'mi muovevo', 'mi movevo')
+        self.assertAccepts('NUTR(ISC)O', 'nutrisco', 'nutro')
+        self.assertRejects('NUTR(ISC)O', 'nutr(isc)o', 'nutrsco')
+
+    def test_response_scoring_accepts_alternatives(self):
+        user = ConjugacionesUser.objects.create_user('a@example.com', 'a@example.com', 'pw')
+        verb = make_verb('preoccuparsi', language='IT', form_1s='MI SONO PREOCCUPATO/A', form_2s='TI SEI PREOCCUPATO/A')
+        self.client.post('/api/responses/', {'verbId': verb.id, 'answers': [
+            {'tense': 'Presente', 'form1s': 'mi sono preoccupata', 'form2s': 'ti sei preoccupato'},
+        ]}, format='json', HTTP_AUTHORIZATION=f'Token {user.token}')
+        weighter = VerbWeighter.objects.get(user=user, verb=verb)
+        self.assertEqual((weighter.total_correct, weighter.total_incorrect), (2, 0))

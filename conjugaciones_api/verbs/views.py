@@ -4,6 +4,7 @@ from django.core.cache import caches
 from django.db.models import prefetch_related_objects
 from rest_framework import generics, permissions, response, status, viewsets
 
+from .answers import is_correct
 from .constants import MOST_COMMON_INFINITIVES_BY_LANGUAGE
 from .models import Verb, VerbWeighter
 from .serializers import VerbSerializer, VerbResponseSerializer
@@ -50,10 +51,7 @@ class VerbsViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
         if request.user.is_authenticated:
-            verbs = [
-                vw.verb for vw in
-                VerbWeighter.heaviest_verbs(user=request.user, language=language, num_verbs=NUM_VERBS)
-            ]
+            verbs = VerbWeighter.sample_verbs(user=request.user, language=language, num_verbs=NUM_VERBS)
         else:
             verbs = self._get_random_verbs(language=language)
             most_common = self._get_most_common(language=language)
@@ -98,18 +96,16 @@ class VerbResponseViewSet(generics.GenericAPIView):
                     continue
 
                 correct_answer = getattr(conjugation_this_tense, form.replace('form', 'form_'), None)
-                if not correct_answer:
+                # placeholders like "—" mark persons a defective verb doesn't have
+                if not correct_answer or not any(ch.isalpha() for ch in correct_answer):
                     continue
 
-                if answer.lower() == correct_answer.strip().lower():
+                if is_correct(correct_answer, answer):
                     total_correct += 1
                 else:
                     total_incorrect += 1
 
         weighter = VerbWeighter.objects.get_or_create(verb=verb, user=request.user)[0]
-        weighter.total_correct += total_correct
-        weighter.total_incorrect += total_incorrect
-        weighter.times_seen += 1
-        weighter.save()
+        weighter.record_review(total_correct, total_incorrect)
 
         return response.Response(data={'weight': weighter.weight}, status=200)
