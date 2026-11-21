@@ -3,119 +3,93 @@ import styled from 'styled-components';
 import capitalize from 'lodash/capitalize';
 
 import {
-  FIERY_ROSE,
-  MINT,
-  GAINSBORO,
-  TURQUOISE,
-  ROYAL_PURPLE
- } from '../constants/StyleConstants';
+  ACCENT,
+  ACCENT_SOFT,
+  LABEL,
+  SECONDARY_LABEL,
+  SEPARATOR,
+  SURFACE_TRANSLUCENT,
+} from '../constants/StyleConstants';
 
 
 const TenseSelectorStyles = styled.div`
-margin-top: 20px;
-width: 100%;
-height: 70%;
-display: grid;
-grid-template-rows: 25px 1fr;
-position: fixed;
-top: 100px;
-bottom: 0;
-width: 345px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 16px 24px;
+  scrollbar-width: none;
 
-.tense-selector-title {
-  font-weight: 600;
-  font-size: 1.1rem;
-}
-.tense-selector-body {
-  height: 100%;
-  width: 100%;
-  overflow: scroll;
   &::-webkit-scrollbar {
     display: none;
   }
-  scrollbar-width: none;
-}
 
-
-.tense-category-holder {
-  display: flex;
-  flex-direction: column;
-}
-
-.tense-category-name {
-  font-size: 1rem;
-  font-weight: 400;
-  letter-spacing: 2px;
-  margin-bottom: 5px;
-}
-
-.tense-category-tenses {
-  display: flex;
-  flex-wrap: wrap;
-  margin-bottom: 5px;
-}
-
-@media (max-width: 900px) {
-  left: 20px;
-  width: 80%;
-  margin-top: 10px;
-  height: 100%;
-
-  .tense-selector-body {
-    height: auto;
-    padding-bottom: 200px;
+  .tense-selector-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 6px 0 2px;
   }
-}
 
+  .tense-category-name {
+    margin: 14px 0 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: ${SECONDARY_LABEL};
+  }
+
+  .tense-category-tenses {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
 `
-const Tense = styled.div`
-text-align: center;
-font-size:  12px;
-padding: 5px;
-border-radius: 7px;
-margin: 2px 2.5px;
-background: ${props => props.$active ? TURQUOISE : FIERY_ROSE };
-color: white;
-border: 1px solid ${props => props.$active ? TURQUOISE : 'white' };
 
-&:hover {
+const Tense = styled.button`
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 0.5px solid ${props => props.$active ? ACCENT : SEPARATOR};
+  background: ${props => props.$active ? ACCENT : SURFACE_TRANSLUCENT};
+  color: ${LABEL};
+  font-size: 12px;
+  font-weight: ${props => props.$active ? 600 : 400};
+  line-height: 1.3;
   cursor: pointer;
-  border: 1px solid white;
-  background: white;
-  color: ${props => props.$active ? TURQUOISE : FIERY_ROSE };
-}
+  transition: background .15s, color .15s, transform .1s;
+
+  &:hover {
+    background: ${props => props.$active ? ACCENT : ACCENT_SOFT};
+  }
+
+  &:active {
+    transform: scale(.96);
+  }
 `
 
 export default ({ tenses, tensesWithCategories, toggleSelectedTense }) => (
   <TenseSelectorStyles>
-    <div className='tense-selector-title'>Tense/Mood</div>
-    <div className='tense-selector-body'>
+    <div className='tense-selector-title'>Tense / Mood</div>
     {
       tenses && tensesWithCategories && Object.keys(tensesWithCategories).map(category =>
-        <div className='tense-category-holder' key={category}>
+        <div key={category}>
           <div className='tense-category-name'>{category}</div>
           <div className='tense-category-tenses'>
           {
-            tensesWithCategories[category].map((t) => {
-              if (t in tenses) {
-                return (
-                  <Tense
-                    className='tense'
-                    key={ t }
-                    $active={ tenses[t] }
-                    onClick={ () => toggleSelectedTense({ ...tenses, [t]: !tenses[t] }) }
-                  >{ capitalize(t) }
-                  </Tense>
-                );
-              } else {
-                return null;
-              }
-            })
+            tensesWithCategories[category]
+              .filter(t => t in tenses)
+              .map(t => (
+                <Tense
+                  type='button'
+                  key={ t }
+                  $active={ tenses[t] }
+                  aria-pressed={ !!tenses[t] }
+                  onClick={ () => toggleSelectedTense({ ...tenses, [t]: !tenses[t] }) }
+                >{ capitalize(t) }</Tense>
+              ))
           }
           </div>
         </div>
       )
     }
-    </div>
   </TenseSelectorStyles>
 )

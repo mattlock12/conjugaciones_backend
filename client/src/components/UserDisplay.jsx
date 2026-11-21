@@ -2,46 +2,68 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { LOGIN_FORM } from './Entry';
-import { TURQUOISE } from '../constants/StyleConstants'
+import { ACCENT_TEXT, SECONDARY_LABEL, SEPARATOR, SURFACE_TRANSLUCENT } from '../constants/StyleConstants'
 
 const StyledUserDisplay = styled.div`
-display: grid;
-grid-template-columns: 1.5fr 1fr;
-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 16px 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: ${SURFACE_TRANSLUCENT};
+  border: 0.5px solid ${SEPARATOR};
+  font-size: 13px;
 
-.user-display-action {
-  cursor: pointer;
-  &:hover {
-    color: ${TURQUOISE};
+  .username {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: ${SECONDARY_LABEL};
   }
-}
 
+  button {
+    flex: 0 0 auto;
+    padding: 0;
+    border: none;
+    background: none;
+    color: ${ACCENT_TEXT};
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 `
 
 
-const UserDisplay = ({ user, setUser, setUserToken, setShouldDisplay }) => {
-  return (
-    <StyledUserDisplay>
-     {
+const UserDisplay = ({ user, setUser, setUserToken, setShouldDisplay }) => (
+  <StyledUserDisplay>
+    {
       user ?
         <>
-          <div id='username'>{user.email}</div>
-          <div
-            className='user-display-action'
+          <div className='username' title={user.email}>{user.email}</div>
+          <button
+            type='button'
             onClick={() => {
               setUser(null);
-              setUserToken(null)
-            }
-          }>Logout</div>
+              setUserToken(null);
+            }}
+          >Log out</button>
         </>
         :
-        <div
-          className='user-display-action'
-          onClick={() => setShouldDisplay(LOGIN_FORM)}
-        >Login / Signup</div>
-     }
-     </StyledUserDisplay>
-  )
-};
+        <>
+          <div className='username'>Not signed in</div>
+          <button type='button' onClick={() => setShouldDisplay(LOGIN_FORM)}>
+            Log in / Sign up
+          </button>
+        </>
+    }
+  </StyledUserDisplay>
+);
 
 export default UserDisplay;

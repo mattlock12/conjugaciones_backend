@@ -1,123 +1,126 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import capitalize from 'lodash/capitalize';
 
-import ConjugationForm from './ConjugationForm';
+import Confetti, { CONFETTI_MS } from './Confetti';
+import VerbPanel from './VerbPanel';
+import { slideAnimation, SLIDE_MS } from './slide';
+import { IconButton } from './AppHeader';
+import { SidebarIcon, ChevronRight } from './Icons';
+import {
+  BACKGROUND,
+  ACCENT,
+  HIGHLIGHT,
+  LABEL,
+  ACCENT_PRESSED,
+  NAVBAR_BG,
+  HIGHLIGHT_RING,
+  SECONDARY_LABEL,
+  SEPARATOR,
+  SUCCESS_BG,
+  SUCCESS_NAVBAR_BG,
+  TERTIARY_LABEL,
+} from '../constants/StyleConstants';
 
 
-const StyledContainer = styled.div`
-  display: grid;
-  grid-template-rows: 100px 1fr;
-  overflow: hidden;
-  background: #f7f7f7;
-  width: 100%;
+const StyledContainer = styled.main`
+  flex: 1;
+  min-width: 0;
   height: 100%;
-
-  @media (max-width: 900px) {
-    padding: 0 20px;
-  }
+  display: flex;
+  flex-direction: column;
+  background-color: ${props => props.$done ? SUCCESS_BG : BACKGROUND};
+  transition: background-color .8s ease;
 `
 
-const StyledInfinitiveHeader = styled.div`
-  overflow: hidden;
-  background: white;
+const NavBar = styled.header`
+  position: relative;
+  z-index: 5;
   display: flex;
   align-items: center;
-  padding-left: 25px;
-  padding-top: 10px;
-  margin-bottom: 15px;
-  box-shadow: 1px 1px 3px #424242;
+  gap: 10px;
+  padding: 14px 20px 12px;
+  background-color: ${props => props.$done ? SUCCESS_NAVBAR_BG : NAVBAR_BG};
+  transition: background-color .8s ease;
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 0.5px solid ${SEPARATOR};
 
-  #infinitive-organizer {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    padding: 5px 0;
+  .titles {
+    flex: 1;
+    min-width: 0;
   }
 
-  #infinitive-top {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 50% 50%;
-    margin-bottom: 5px;
+  .infinitive {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  #infinitive {
-    flex-grow: 1;
-    font-weight: 600;
-    font-size: 28px;
-  }
+  .subtitle {
+    margin-top: 2px;
+    font-size: 14px;
+    color: ${SECONDARY_LABEL};
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
-  #next-button {
-    margin-left: 5px;
-    font-size: 17px;
-    border: 1px solid gray;
-    border-radius: 10px;
-    padding: 5px;
-    width: 150px;
-    text-align: center;
-
-    &:hover {
-      cursor: pointer;
-      background: blue;
-      color: white;
-      border: white;
+    .progress {
+      color: ${TERTIARY_LABEL};
+      margin-left: 6px;
     }
   }
 
   @media (max-width: 900px) {
-    padding-top: 7px;
+    padding: 10px 14px;
 
-    #infinitive-english {
-      margin-left: 0;
-      font-size: .8rem;
+    .infinitive {
+      font-size: 24px;
     }
 
-    #next-button {
-      width: 75px;
-      font-size: 16px;
+    .subtitle {
+      font-size: 13px;
     }
   }
 `
 
-const ConjugationFormList = styled.div`
-  padding-left: 25px;
-  background: #f7f7f7;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  overflow: scroll;
-
-  @media (max-width: 900px) {
-    padding-left: 0;
-  }
-`
-
-const ConjugationFormHolder = styled.div`
-  height: 276px;
-  background: white;
-  margin: 20px;
-  margin-left: 0px;
-  margin-top: 0px;
-  border: 1px solid #aaa;
-  border-radius: 8px;
-  padding: 15px;
-  font-size: 1rem;
-
-  @media (max-width: 900px) {
-    min-height: 340px;
-    height: auto;
-    margin: 5px 0;
-    margin-left: 5px;
-    font-size: 1rem;
-    width: 100%;
-  }
-`
-
-const ConjugationTense = styled.div`
-  font-size: 1rem;
+const NextButton = styled.button`
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, ${ACCENT} 0%, ${HIGHLIGHT} 100%);
+  box-shadow: 0 4px 12px rgba(249, 102, 53, 0.3);
+  color: ${LABEL};
+  font-size: 15px;
   font-weight: 600;
-  margin-bottom: 7px;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+
+  &:hover {
+    background: ${ACCENT_PRESSED};
+  }
+
+  &:active {
+    transform: scale(.97);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px ${HIGHLIGHT_RING};
+  }
+
+  &:disabled {
+    opacity: .4;
+    cursor: default;
+  }
 `
 
 function fetchVerbs ({ language, setVerbs, setLoading, setIdx, user }) {
@@ -177,19 +180,36 @@ function submitConjugations ({ user, verb, answersByTense }) {
 };
 
 
-const scrollToRef = ref => ref.current.scrollIntoView();
 
 
-const VerbContainer = ({ language, tenses, user }) => {
-  const verbListRef = useRef(null);
-  const executeScroll = () => scrollToRef(verbListRef);
+// the outgoing and incoming verb share one grid cell while sliding
+const Stage = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  overflow: hidden;
+`
 
+const Titles = styled.div`
+  ${slideAnimation}
+`
+
+
+const VerbContainer = ({ language, tenses, user, isSidebarOpen, openSidebar }) => {
   const [answersByTense, setAnswersByTense] = useState({});
   const [isLoading, setLoading] = useState(true);
   const [verbs, setVerbs] = useState([])
   const [idx, setIdx] = useState(0)
   // bumped to fetch a fresh batch once the current one is exhausted
   const [batch, setBatch] = useState(0);
+  const [allTensesDone, setAllTensesDone] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  // counts verbs shown, so outgoing and incoming panels never share a key
+  const [serial, setSerial] = useState(0);
+  // the verb sliding out after Next
+  const [exiting, setExiting] = useState(null);
+
   const userToken = user && user.token;
   useEffect(() => {
     fetchVerbs({ language, setVerbs, setLoading, setIdx, user });
@@ -197,70 +217,95 @@ const VerbContainer = ({ language, tenses, user }) => {
 
   const verb = verbs[idx];
   const verbsLength = verbs.length;
+  const showVerb = !isLoading && verb;
+
+  const goToNext = () => {
+    if (!verb) {
+      return;
+    }
+    if (user) {
+      submitConjugations({ user, verb, answersByTense });
+    }
+    setAnswersByTense({});
+    setAllTensesDone(false);
+    setShowConfetti(false);
+    setExiting({ verb, serial });
+    setSerial(serial + 1);
+
+    if (idx >= verbsLength - 1) {
+      setBatch(batch + 1);
+    } else {
+      setIdx(idx + 1);
+    }
+  };
+
+  useEffect(() => {
+    if (!exiting) {
+      return undefined;
+    }
+    const timer = setTimeout(() => setExiting(null), SLIDE_MS);
+    return () => clearTimeout(timer);
+  }, [exiting]);
+
+  useEffect(() => {
+    if (!allTensesDone) {
+      return undefined;
+    }
+    setShowConfetti(true);
+    const timer = setTimeout(() => setShowConfetti(false), CONFETTI_MS);
+    return () => clearTimeout(timer);
+  }, [allTensesDone]);
+
+  const panelProps = {
+    language,
+    tenses,
+    setAnswersByTense,
+    onAllDoneChange: setAllTensesDone,
+    goToNextVerb: goToNext,
+  };
 
   return (
-    <StyledContainer>
-      {
-        isLoading || !verb ?
-        <h1>Loading Some Verbs</h1> :
-        <>
-          <StyledInfinitiveHeader>
-            <div id='infinitive-organizer'>
-              <div id='infinitive-top'>
-                <div id='infinitive'>{ verb.infinitive.toLowerCase() }</div>
-                <div
-                  id='next-button'
-                  onClick={() => {
-                    if (user) {
-                      submitConjugations({ user, verb, answersByTense });
-                    }
-                    setAnswersByTense({});
-
-                    if (idx >= verbsLength - 1) {
-                      setBatch(batch + 1);
-                    } else {
-                      setIdx(idx + 1);
-                    }
-                    executeScroll();
-                  }}>next {'>>'}</div>
-              </div>
-              <div id='infinitive-bottom'>
-                <div id='infinitive-english'>({ verb.infinitiveEnglish.toLowerCase() })</div>
-              </div>
-            </div>
-          </StyledInfinitiveHeader>
-          <ConjugationFormList>
-           <div ref={verbListRef}></div>
-          {
-            tenses && Object.keys(tenses).filter(t => tenses[t]).map((tense, tIdx) => (
-              (
-                Object.values(
-                  verbs[idx].verbConjugations.find(v => v.tense.toLowerCase() === tense.toLowerCase()) || {}
-                ).some(v => v)
-              ) &&
-              <ConjugationFormHolder key={`${tense}${verb.id}`} >
-                <ConjugationTense key={`${tense}tense`}>{capitalize(tense)}</ConjugationTense>
-                <ConjugationForm
-                  idx={ tIdx }
-                  key={ `${tense}CF` }
-                  shouldAutoFocus={ tIdx == 0 }
-                  verb={ verbs[idx] }
-                  tense={ tense }
-                  language={language}
-                  answersByTense={answersByTense}
-                  setAnswersByTense={setAnswersByTense}
-                  verbConjugations={
-                    verbs[idx].verbConjugations.find(v =>
-                      v.tense.toLowerCase() === tense.toLowerCase()
-                    ) || {}
-                  }
-                />
-              </ConjugationFormHolder>
-            ))
-          }
-          </ConjugationFormList>
-        </>
-      }
+    <StyledContainer $done={allTensesDone}>
+      <NavBar $done={allTensesDone}>
+        {
+          !isSidebarOpen &&
+          <IconButton type='button' aria-label='Show sidebar' onClick={openSidebar}>
+            <SidebarIcon />
+          </IconButton>
+        }
+        <Titles className='titles' key={serial} $anim={exiting ? 'in' : null} $dir={1}>
+          <h2 className='infinitive'>{ showVerb ? verb.infinitive.toLowerCase() : 'Loading…' }</h2>
+          <div className='subtitle'>
+            { showVerb ? verb.infinitiveEnglish.toLowerCase() : '\u00a0' }
+            { showVerb && <span className='progress'>· { idx + 1 } of { verbsLength }</span> }
+          </div>
+        </Titles>
+        <NextButton type='button' onClick={goToNext} disabled={!showVerb}>
+          Next <ChevronRight />
+        </NextButton>
+      </NavBar>
+      <Stage>
+        {
+          exiting &&
+          <VerbPanel
+            key={exiting.serial}
+            verb={exiting.verb}
+            isExiting
+            anim='out'
+            {...panelProps}
+          />
+        }
+        {
+          showVerb &&
+          <VerbPanel
+            key={serial}
+            verb={verb}
+            anim={exiting ? 'in' : null}
+            {...panelProps}
+          />
+        }
+      </Stage>
+      { showConfetti && <Confetti /> }
     </StyledContainer>
   );
 }
