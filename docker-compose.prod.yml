@@ -1,7 +1,36 @@
+# Use with: docker compose -f docker-compose.yml -f docker-compose.prod.yml ...
+# Needs Compose v2.24.4+ (for !reset/!override) and a .env next to this file with
+# DJANGO_SECRET_KEY (and optionally POSTGRES_PASSWORD); see README.
 services:
+  backend:
+    # run the code baked into the image, not a live bind mount of the checkout
+    volumes: !reset []
+    restart: unless-stopped
+    # the dev file also makes the backend wait on the client dev server
+    depends_on: !override
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DJANGO_DEBUG: '0'
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?set DJANGO_SECRET_KEY in .env}
+      DJANGO_ALLOWED_HOSTS: entend.io,www.entend.io
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-PASSWORD}
+    command:
+      - gunicorn
+      - conjugaciones_api.wsgi:application
+      - --bind=0.0.0.0:8000
+      - --workers=3
+      - --access-logfile=-
+
+  # one-shot bundle build into ./static: `docker compose ... run --rm client`.
+  # The profile keeps `up` from starting it; `up` would otherwise rebuild on top
+  # of the live bundle, with node_modules from a stale anonymous volume.
   client:
     build: ./client
-    restart: on-failure
+    profiles: [build]
+    restart: 'no'
     volumes:
       - ./client:/app
       - /app/node_modules

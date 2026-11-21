@@ -42,7 +42,31 @@ React client to consume it
 `docker compose exec backend python manage.py test`
 
 ### Production build
-`docker compose -f docker-compose.yml -f docker-compose.prod.yml up client` writes the bundle to `./static`, which nginx serves.
+`docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm client` writes the bundle to `./static`, which nginx serves.
+
+### Deployment
+Every push to `master` (i.e. a merged PR) runs `.github/workflows/deploy.yml`, which SSHes into the
+droplet and runs `scripts/deploy.sh`: fast-forward to `origin/master`, rebuild images, build the client
+bundle, `up -d`, then `migrate`. It can also be run manually from the Actions tab.
+
+One-time setup:
+1. On the droplet, clone this repo (default path `/root/conjugaciones_backend`; override with the
+   `DEPLOY_PATH` repository variable) and make sure the deploy user can run `docker` and `git fetch`.
+1. In the checkout on the droplet, create a `.env` (gitignored; Compose reads it automatically):
+    ```
+    DJANGO_SECRET_KEY=<output of: python3 -c "import secrets; print(secrets.token_urlsafe(50))">
+    # optional; Postgres only applies it when ./pgdata is first created
+    POSTGRES_PASSWORD=<a strong password>
+    ```
+   Production runs gunicorn with `DEBUG` off and `ALLOWED_HOSTS` set to `entend.io`/`www.entend.io`
+   (see `docker-compose.prod.yml`). It needs Docker Compose v2.24.4+ (`docker compose version`).
+1. Create a deploy keypair (`ssh-keygen -t ed25519 -f deploy_key -N ""`) and append `deploy_key.pub`
+   to the deploy user's `~/.ssh/authorized_keys` on the droplet.
+1. In GitHub → Settings → Environments, create `production` with these secrets:
+    - `DEPLOY_SSH_KEY`: contents of `deploy_key`
+    - `DEPLOY_HOST`: droplet IP or hostname
+    - `DEPLOY_USER`: SSH user on the droplet
+    - `DEPLOY_KNOWN_HOSTS`: output of `ssh-keyscan -H <droplet-ip>`
 
 ### Upgrading an existing `./pgdata`
 The database now runs on Postgres 18, which stores its data under `./pgdata/18/docker`.

@@ -4,7 +4,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: 'conjugaciones-user'
-      POSTGRES_PASSWORD: 'PASSWORD'
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-PASSWORD}
       POSTGRES_DB: 'conjugaciones'
     volumes:
       # postgres 18+ images keep data in a versioned subdirectory of this path

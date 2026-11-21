@@ -4,6 +4,8 @@
 # caches
 *__pycache__
 
+.env
+
 # vscode
 .vscode
 
