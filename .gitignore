@@ -4,7 +4,10 @@
 # caches
 *__pycache__
 
+# environment files hold secrets; only the example is tracked
 .env
+.env.*
+!.env.example
 
 # vscode
 .vscode

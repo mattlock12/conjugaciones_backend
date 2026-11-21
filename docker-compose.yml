@@ -34,6 +34,8 @@ services:
     container_name: backend
     volumes:
       - ./conjugaciones_api:/app
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-PASSWORD}
     depends_on:
       db:
         condition: service_healthy

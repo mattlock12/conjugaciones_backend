@@ -52,11 +52,18 @@ bundle, `up -d`, then `migrate`. It can also be run manually from the Actions ta
 One-time setup:
 1. On the droplet, clone this repo (default path `/root/conjugaciones_backend`; override with the
    `DEPLOY_PATH` repository variable) and make sure the deploy user can run `docker` and `git fetch`.
-1. In the checkout on the droplet, create a `.env` (gitignored; Compose reads it automatically):
+1. Put the production secrets in `.env` in the checkout on the droplet (gitignored; Compose reads it
+   automatically). `.env.example` lists the variables. Keep the real values in a local, gitignored
+   `.env.production` and copy it up:
     ```
-    DJANGO_SECRET_KEY=<output of: python3 -c "import secrets; print(secrets.token_urlsafe(50))">
-    # optional; Postgres only applies it when ./pgdata is first created
-    POSTGRES_PASSWORD=<a strong password>
+    scp .env.production <user>@<droplet>:<deploy path>/.env
+    ssh <user>@<droplet> chmod 600 <deploy path>/.env
+    ```
+   Don't name the local copy `.env`: the dev stack would pick up its `POSTGRES_PASSWORD`.
+   Postgres only applies `POSTGRES_PASSWORD` when `./pgdata` is first created. To switch an existing
+   database to it, run once on the droplet (with the new password):
+    ```
+    docker compose exec db psql -U conjugaciones-user -d conjugaciones -c "ALTER USER \"conjugaciones-user\" PASSWORD '<new password>'"
     ```
    Production runs gunicorn with `DEBUG` off and `ALLOWED_HOSTS` set to `entend.io`/`www.entend.io`
    (see `docker-compose.prod.yml`). It needs Docker Compose v2.24.4+ (`docker compose version`).
