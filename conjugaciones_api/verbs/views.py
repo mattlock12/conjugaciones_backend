@@ -100,7 +100,7 @@ class VerbResponseViewSet(generics.GenericAPIView):
                 if not correct_answer or not any(ch.isalpha() for ch in correct_answer):
                     continue
 
-                if is_correct(correct_answer, answer):
+                if is_correct(correct_answer, answer, verb.infinitive):
                     total_correct += 1
                 else:
                     total_incorrect += 1

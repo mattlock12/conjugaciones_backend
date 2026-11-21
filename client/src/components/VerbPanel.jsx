@@ -353,6 +353,7 @@ const VerbPanel = ({
                         }
                       }}
                       verbConjugations={ conjugations }
+                      infinitive={ verb.infinitive }
                     />
                   </PaneBody>
                 </Pane>

@@ -8,7 +8,7 @@ from rest_framework.test import APITestCase
 
 from users.models import ConjugacionesUser
 from .constants import MOST_COMMON_ES
-from .answers import is_correct
+from .answers import EXACT, ROOT_TYPO, check_answer, is_correct, verb_stem
 from .models import MIN_WEIGHT, Verb, VerbConjugation, VerbWeighter, compute_weight
 
 LOCMEM_CACHES = {
@@ -255,7 +255,24 @@ class AnswerMatchingTests(APITestCase):
         self.assertAccepts('MORIRÒ, MORRÒ', 'morirò', 'morrò')
         self.assertAccepts('PERSE, PERDÉ, PERDETTE', 'perse', 'perdé', 'perdette')
         self.assertAccepts("VA, VAI, VA'", 'va', 'vai', "va'", 'va’')
-        self.assertRejects('MORIRÒ, MORRÒ', 'morirò, morrò', 'moriro')
+        self.assertRejects('MORIRÒ, MORRÒ', 'morirò, morrò', 'morire')
+
+    def test_vowel_accents_are_optional_in_any_case(self):
+        self.assertAccepts('PERDÉ', 'perdé', 'perde', 'PERDE', 'PERDÉ', 'perdè', 'perde\u0301')
+        self.assertAccepts('È STATO', 'è stato', 'e stato', 'E stato', 'É stato')
+        self.assertAccepts('HABLÓ', 'hablo', 'HABLO', 'habló', 'hablò')
+        self.assertAccepts('MORIRÒ, MORRÒ', 'moriro', 'MORRO')
+        self.assertAccepts('ESTÁIS', 'estais', 'ESTAIS')
+        self.assertAccepts('OÍMOS', 'oimos', 'OIMOS')
+        self.assertAccepts('ARGÜIR', 'arguir', 'ARGUIR')
+        self.assertAccepts('PERSE, PERDÉ, PERDETTE', 'perde')
+        self.assertRejects('PERDÉ', 'perda')
+
+    def test_consonant_marks_still_count(self):
+        self.assertAccepts('NIÑO', 'niño', 'NIÑO', 'nin\u0303o')
+        self.assertRejects('NIÑO', 'nino')
+        self.assertAccepts('AÑADÍ', 'añadi')
+        self.assertRejects('AÑADÍ', 'anadi')
 
     def test_short_alternative_reuses_leading_words(self):
         self.assertAccepts('HO PERSO, PERDUTO', 'ho perso', 'ho perduto', 'ho  perduto')
@@ -279,3 +296,49 @@ class AnswerMatchingTests(APITestCase):
         ]}, format='json', HTTP_AUTHORIZATION=f'Token {user.token}')
         weighter = VerbWeighter.objects.get(user=user, verb=verb)
         self.assertEqual((weighter.total_correct, weighter.total_incorrect), (2, 0))
+
+    def test_response_scoring_forgives_root_typos(self):
+        user = ConjugacionesUser.objects.create_user('a@example.com', 'a@example.com', 'pw')
+        verb = make_verb('MANGIARE', language='IT', form_1s='MANGIO', form_2s='MANGI', form_3s='MANGIA')
+        self.client.post('/api/responses/', {'verbId': verb.id, 'answers': [
+            {'tense': 'Presente', 'form1s': 'magio', 'form2s': 'mangi', 'form3s': 'magio'},
+        ]}, format='json', HTTP_AUTHORIZATION=f'Token {user.token}')
+        weighter = VerbWeighter.objects.get(user=user, verb=verb)
+        self.assertEqual((weighter.total_correct, weighter.total_incorrect), (2, 1))
+
+
+class RootTypoTests(APITestCase):
+    def assertResult(self, infinitive, expected, result, *answers):
+        for answer in answers:
+            self.assertEqual(check_answer(expected, answer, infinitive), result,
+                             f'{answer!r} for {expected!r} ({infinitive})')
+
+    def test_verb_stem(self):
+        for infinitive, stem in [('MANGIARE', 'mangi'), ('abandonarse', 'abandon'), ('LAVARSI', 'lav'),
+                                 ('mudar(se)', 'mud'), ('CONDURRE', 'cond'), ('reír', 're')]:
+            self.assertEqual(verb_stem(infinitive), stem)
+
+    def test_typo_in_root_is_forgiven(self):
+        self.assertResult('MANGIARE', 'MANGIO', ROOT_TYPO, 'magio', 'mamgio', 'manngio', 'Magio')
+        self.assertResult('MANGIARE', 'MANGERÒ', ROOT_TYPO, 'magerò', 'magero')
+        self.assertResult('MANGIARE', 'HO MANGIATO', ROOT_TYPO, 'ho magiato', 'ho magniato')
+        self.assertResult('UCCIDERE', 'UCCISI', ROOT_TYPO, 'ucisi')
+        self.assertResult('abandonarse', 'me abandono', ROOT_TYPO, 'me abandno', 'me abnadono')
+        self.assertResult('PREOCCUPARE', 'PREOCCUPATO/A', ROOT_TYPO, 'preocupata')
+        self.assertResult('MANGIARE', 'MANGIO', EXACT, 'mangio')
+
+    def test_conjugation_must_be_exact(self):
+        self.assertResult('MANGIARE', 'MANGIO', None, 'mangia', 'magia', 'mangiao')
+        self.assertResult('MANGIARE', 'MANGERÒ', None, 'mangiro')
+        self.assertResult('MANGIARE', 'HO MANGIATO', None, 'ha magiato', 'ho mangaito')
+        self.assertResult('abandonarse', 'me abandono', None, 'te abandono')
+        # stem changes are conjugation
+        self.assertResult('sonar', 'sueno', None, 'sono', 'seuno')
+
+    def test_large_or_unanchored_root_mistakes_are_wrong(self):
+        self.assertResult('MANGIARE', 'MANGIO', None, 'xxngio')
+        self.assertResult('abandonar', 'abandono', None, 'xyzdono')
+        # roots under three letters are too short to forgive
+        self.assertResult('DARE', 'DO', None, 'xo')
+        # without an infinitive there is no root to forgive
+        self.assertResult(None, 'MANGIO', None, 'magio')
