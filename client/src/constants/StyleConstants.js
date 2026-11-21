@@ -18,6 +18,11 @@ export const SUCCESS_PRESSED = '#25a592';
 export const SUCCESS_TEXT = '#18695e';
 export const SUCCESS_SOFT = 'rgba(43, 186, 165, 0.16)';
 
+// Slip: an answer accepted despite a typo in the verb's root. Warm amber so it
+// reads apart from both the green of success and the orange-red of a mistake.
+export const SLIP_TEXT = '#8a5300';
+export const SLIP_SOFT = 'rgba(249, 168, 34, 0.32)';
+
 export const HIGHLIGHT = ORANGE_WEB;
 export const HIGHLIGHT_RING = 'rgba(249, 168, 34, 0.4)';
 

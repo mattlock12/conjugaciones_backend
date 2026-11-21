@@ -3,7 +3,7 @@ import { Form, Field } from 'react-final-form'
 import styled from 'styled-components';
 
 import { LANGUAGE_TO_LABELS, applicablePersons } from '../constants/Constants';
-import { isCorrectAnswer } from '../constants/Answers';
+import { checkAnswer, ROOT_TYPO } from '../constants/Answers';
 import ProgressBar from './ProgressBar';
 import {
   ACCENT,
@@ -18,6 +18,8 @@ import {
   LABEL,
   SECONDARY_LABEL,
   SEPARATOR,
+  SLIP_SOFT,
+  SLIP_TEXT,
   TERTIARY_LABEL,
 } from '../constants/StyleConstants';
 
@@ -86,6 +88,20 @@ const Answer = styled.p`
   color: ${props => props.$showError ? ACCENT_TEXT : SUCCESS_TEXT};
 `
 
+// a letter of the verb's root the typed answer got wrong (answer still accepted)
+const Slip = styled.mark`
+  padding: 0 1px;
+  border-radius: 3px;
+  background: ${SLIP_SOFT};
+  color: ${SLIP_TEXT};
+  font-weight: 700;
+`
+
+// the accepted spelling, with the root letters that were mistyped flagged
+const SlipAnswer = ({ display, marks }) => [...display].map((ch, i) => (
+  marks.includes(i) ? <Slip key={i}>{ch}</Slip> : ch
+));
+
 const CheckButton = styled.button`
   display: block;
   width: 100%;
@@ -134,10 +150,12 @@ const focusFirstOpenInput = form => {
 };
 
 
-const ConjugationForm = ({ verbConjugations, tense, isActive, language, setAnswersByTense, onCompleteChange, onNext, nextLabel }) => {
+const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, language, setAnswersByTense, onCompleteChange, onNext, nextLabel }) => {
   const applicable = applicablePersons(language, tense, verbConjugations);
   // persons answered correctly; these inputs are locked
   const [locked, setLocked] = useState({});
+  // persons accepted despite a typo in the root: { display, marks } to flag it
+  const [slips, setSlips] = useState({});
 
   const allCorrect = applicable.length > 0 && applicable.every(person => locked[person]);
   const formRef = useRef(null);
@@ -175,19 +193,25 @@ const ConjugationForm = ({ verbConjugations, tense, isActive, language, setAnswe
 
         const errors = {};
         const newlyCorrect = {};
+        const newSlips = {};
         applicable.forEach(person => {
           const given = values[person];
           // locked boxes keep their value but were already counted
           if (locked[person] || !given || !given.trim()) {
             return;
           }
-          if (isCorrectAnswer(verbConjugations[person], given)) {
+          const check = checkAnswer(verbConjugations[person], given, infinitive);
+          if (check.result) {
             newlyCorrect[person] = true;
+            if (check.result === ROOT_TYPO) {
+              newSlips[person] = check;
+            }
           } else {
             errors[person] = true;
           }
         });
         setLocked(prev => ({ ...prev, ...newlyCorrect }));
+        setSlips(prev => ({ ...prev, ...newSlips }));
         if (Object.keys(errors).length > 0) {
           setStreak(0);
           setFailCount(count => count + 1);
@@ -209,6 +233,7 @@ const ConjugationForm = ({ verbConjugations, tense, isActive, language, setAnswe
             Object.keys(LANGUAGE_TO_LABELS[language]).map(person => {
               const isApplicable = applicable.includes(person);
               const isLocked = !!locked[person];
+              const slip = slips[person];
               return (
               <FormLine key={person}>
                 <PersonLabel $applicable={isApplicable}>{LANGUAGE_TO_LABELS[language][person]}</PersonLabel>
@@ -231,7 +256,12 @@ const ConjugationForm = ({ verbConjugations, tense, isActive, language, setAnswe
                           <Answer
                             $shouldShow={shouldShow}
                             $showError={showError}
-                          >{showError ? '✗ ' : '✓ '}{verbConjugations[person].toLowerCase()}</Answer>
+                          >
+                            {showError ? '✗ ' : '✓ '}
+                            {slip && !showError ?
+                              <SlipAnswer display={slip.display} marks={slip.marks} /> :
+                              verbConjugations[person].toLowerCase()}
+                          </Answer>
                         </InputContainer>
                       );
                     }}

@@ -19,15 +19,18 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'ymwldts$d%(6r1ux(8dmdf8&-q8*i*6gzp0u0c48x9#_#u(2qm'
+# Defaults are for local development; docker-compose.prod.yml sets the real
+# values from the droplet's .env file.
+DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# the fallback key is public (it's in git), so production refuses to start without its own
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or (
+    'ymwldts$d%(6r1ux(8dmdf8&-q8*i*6gzp0u0c48x9#_#u(2qm' if DEBUG else None
+)
+if not SECRET_KEY:
+    raise RuntimeError('DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is off')
 
-ALLOWED_HOSTS = [
-    "*"
-]
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',') if h.strip()]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -35,7 +38,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -87,7 +89,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'conjugaciones',
         'USER': 'conjugaciones-user',
-        'PASSWORD': 'PASSWORD',
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'PASSWORD'),
         'HOST': 'db',
         'PORT': '5432'
     }

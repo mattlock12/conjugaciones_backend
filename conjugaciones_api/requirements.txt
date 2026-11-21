@@ -3,6 +3,7 @@ django-cors-headers==4.9.0
 django-redis==7.0.0
 djangorestframework==3.18.3
 djangorestframework-camel-case==1.4.2
+gunicorn==27.0.1
 psycopg2-binary==2.9.13
 redis==8.1.0
 
