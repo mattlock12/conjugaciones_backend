@@ -6,6 +6,8 @@ import shuffle from 'lodash/shuffle';
 import { LANGUAGE_TO_LABELS, applicablePersons } from '../constants/Constants';
 import { checkAnswer, ROOT_TYPO } from '../constants/Answers';
 import ProgressBar from './ProgressBar';
+import { SLIDE_MS } from './slide';
+import useMediaQuery from './useMediaQuery';
 import {
   ACCENT,
   ACCENT_TEXT,
@@ -177,6 +179,39 @@ const NextTenseButton = styled.button`
 `
 
 
+// Phones: the box being typed in is scrolled to the middle of what's visible.
+// Wait for the keyboard to finish opening (and iOS's own scroll) first.
+const FOCUS_SETTLE_MS = 300;
+
+const scrollParent = el => {
+  for (let node = el.parentElement; node; node = node.parentElement) {
+    const { overflowY } = getComputedStyle(node);
+    if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight) {
+      return node;
+    }
+  }
+  return null;
+};
+
+// Scrolls only the pane's vertical scroller (scrollIntoView could also shift a
+// pane that is sliding in sideways). "Visible" stops at the top of the keyboard.
+const centerInView = el => {
+  const scroller = scrollParent(el);
+  if (!scroller) {
+    return;
+  }
+  const area = scroller.getBoundingClientRect();
+  const viewport = window.visualViewport;
+  const top = viewport ? Math.max(area.top, viewport.offsetTop) : area.top;
+  const bottom = viewport ? Math.min(area.bottom, viewport.offsetTop + viewport.height) : area.bottom;
+  const box = el.getBoundingClientRect();
+  const offset = (box.top + box.height / 2) - (top + bottom) / 2;
+  if (Math.abs(offset) < 4) {
+    return;
+  }
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  scroller.scrollTo({ top: scroller.scrollTop + offset, behavior: reduceMotion ? 'auto' : 'smooth' });
+};
 
 // the first unanswered box, or the Next Tense button once everything is right
 const focusFirstOpenInput = form => {
@@ -200,6 +235,7 @@ const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, langua
 
   const allCorrect = applicable.length > 0 && applicable.every(person => locked[person]);
   const formRef = useRef(null);
+  const isPhone = useMediaQuery('(max-width: 900px)');
   // the progress bar: first-try correct answers since the last mistake
   const [streak, setStreak] = useState(0);
   const [failCount, setFailCount] = useState(0);
@@ -226,6 +262,38 @@ const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, langua
       focusFirstOpenInput(form);
     }
   }, [locked]);
+
+  // phones: centre whichever box gets focus, whether tapped or moved to after a
+  // correct answer, so the one being answered is easy to see above the keyboard
+  useEffect(() => {
+    const form = formRef.current;
+    if (!isPhone || !isActive || !form) {
+      return undefined;
+    }
+    let timer;
+    const centerSoon = (input, delay) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (document.activeElement === input) {
+          centerInView(input);
+        }
+      }, delay);
+    };
+    const onFocus = event => {
+      if (event.target.tagName === 'INPUT') {
+        centerSoon(event.target, FOCUS_SETTLE_MS);
+      }
+    };
+    form.addEventListener('focusin', onFocus);
+    // the box focused as this tense appears: wait for the pane to finish sliding in
+    if (form.contains(document.activeElement) && document.activeElement.tagName === 'INPUT') {
+      centerSoon(document.activeElement, SLIDE_MS + FOCUS_SETTLE_MS);
+    }
+    return () => {
+      clearTimeout(timer);
+      form.removeEventListener('focusin', onFocus);
+    };
+  }, [isPhone, isActive]);
 
   return (
     <Form
