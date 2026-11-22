@@ -12,11 +12,27 @@ concurrency:
 
 jobs:
   deploy:
+    # a manual run started from another branch must not deploy it
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+
+      # The client bundle is built here rather than on the droplet: webpack's
+      # minifier needs more memory than a small droplet has.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Build client bundle
+        working-directory: client
+        run: |
+          npm ci
+          npm run build
 
       - name: Configure SSH
         env:
@@ -35,7 +51,26 @@ jobs:
           DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/root/conjugaciones_backend' }}
         run: |
           # stream the script from this commit so the droplet always runs the
-          # version of deploy.sh that matches what's being deployed
+          # version of deploy.sh that matches what's being deployed, and pin the
+          # droplet to the commit this bundle was built from
           ssh -i ~/.ssh/id_deploy -o BatchMode=yes \
             "$DEPLOY_USER@$DEPLOY_HOST" \
-            "DEPLOY_PATH='$DEPLOY_PATH' bash -s" < scripts/deploy.sh
+            "DEPLOY_PATH='$DEPLOY_PATH' DEPLOY_SHA='$GITHUB_SHA' bash -s" < scripts/deploy.sh
+
+      - name: Upload client bundle
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/root/conjugaciones_backend' }}
+        run: |
+          # nginx serves ./static straight from disk, so no restart is needed.
+          # Hashed JS first, then index.html, then drop old files, so a visitor
+          # never gets an index.html pointing at a bundle that isn't there yet.
+          target="$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/static"
+          push_static() {
+            rsync -rlt --checksum --chmod=D755,F644 -e "ssh -i $HOME/.ssh/id_deploy -o BatchMode=yes" "$@"
+          }
+          ssh -i ~/.ssh/id_deploy -o BatchMode=yes "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_PATH/static/static'"
+          push_static client/dist/static/ "$target/static/"
+          push_static client/dist/index.html "$target/"
+          push_static --delete client/dist/ "$target/"
