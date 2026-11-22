@@ -42,12 +42,16 @@ React client to consume it
 `docker compose exec backend python manage.py test`
 
 ### Production build
-`docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm client` writes the bundle to `./static`, which nginx serves.
+`cd client && npm run build` writes the bundle to `client/dist`; deploys upload it to `./static` on the
+droplet, which nginx serves. As a fallback on a machine with enough memory,
+`docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm client` builds straight into `./static`.
 
 ### Deployment
-Every push to `master` (i.e. a merged PR) runs `.github/workflows/deploy.yml`, which SSHes into the
-droplet and runs `scripts/deploy.sh`: fast-forward to `origin/master`, rebuild images, build the client
-bundle, `up -d`, then `migrate`. It can also be run manually from the Actions tab.
+Every push to `master` (i.e. a merged PR) runs `.github/workflows/deploy.yml`. It builds the client
+bundle on the GitHub runner, SSHes into the droplet to run `scripts/deploy.sh` (fast-forward to the
+commit being deployed, rebuild images, `up -d`, reload nginx, `migrate`), then rsyncs the bundle into
+`./static` on the droplet. The droplet never builds the client, so it doesn't need the memory for
+webpack. The workflow can also be run manually from the Actions tab (on `master`).
 
 One-time setup:
 1. On the droplet, clone this repo (default path `/root/conjugaciones_backend`; override with the

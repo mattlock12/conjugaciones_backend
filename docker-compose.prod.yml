@@ -24,9 +24,10 @@ services:
       - --workers=3
       - --access-logfile=-
 
-  # one-shot bundle build into ./static: `docker compose ... run --rm client`.
-  # The profile keeps `up` from starting it; `up` would otherwise rebuild on top
-  # of the live bundle, with node_modules from a stale anonymous volume.
+  # Deploys build the bundle in GitHub Actions and upload it to ./static, so this
+  # is only a manual fallback (`docker compose ... run --rm client`), and it needs
+  # more memory than a small droplet has. The profile keeps `up` and a plain
+  # `build` from touching it.
   client:
     build: ./client
     profiles: [build]
