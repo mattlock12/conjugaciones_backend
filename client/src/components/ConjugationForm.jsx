@@ -2,6 +2,7 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Form, Field } from 'react-final-form'
 import styled from 'styled-components';
+import shuffle from 'lodash/shuffle';
 
 import { LANGUAGE_TO_LABELS, applicablePersons } from '../constants/Constants';
 import { checkAnswer, ROOT_TYPO } from '../constants/Answers';
@@ -187,6 +188,9 @@ const focusFirstOpenInput = form => {
 
 const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, language, setAnswersByTense, onCompleteChange, onNext, nextLabel }) => {
   const applicable = applicablePersons(language, tense, verbConjugations);
+  // the person rows in a fresh random order each time a tense is shown, so
+  // answers can't lean on the fixed yo / tú / él sequence; tabbing follows it
+  const [personOrder] = useState(() => shuffle(Object.keys(LANGUAGE_TO_LABELS[language])));
   // persons answered correctly; these inputs are locked
   const [locked, setLocked] = useState({});
   // persons accepted despite a typo in the root: { display, marks } to flag it
@@ -298,7 +302,7 @@ const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, langua
         ({ handleSubmit }) => (
           <form ref={formRef} id={formId} onSubmit={handleSubmit} autoComplete={ 'off' }>
           {
-            Object.keys(LANGUAGE_TO_LABELS[language]).map(person => {
+            personOrder.map(person => {
               const isApplicable = applicable.includes(person);
               const isLocked = !!locked[person];
               const slip = slips[person];
