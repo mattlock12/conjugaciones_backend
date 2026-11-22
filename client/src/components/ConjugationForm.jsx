@@ -148,6 +148,21 @@ const FloatingAction = styled.div`
   }
 `
 
+// ?kbdebug in the URL shows the keyboard measurements above the button
+const KbDebug = styled.div`
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  margin-bottom: 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font: 11px/1.4 ui-monospace, monospace;
+`
+const SHOW_KB_DEBUG = typeof window !== 'undefined' && /[?&]kbdebug\b/.test(window.location.search);
+
 // keeps the end of the form scrollable out from under the floating button
 const FloatSpacer = styled.div`
   height: ${FLOAT_BUTTON_HEIGHT + FLOAT_MARGIN}px;
@@ -201,8 +216,8 @@ const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, langua
   const formId = useId();
   const isPhone = useMediaQuery('(max-width: 900px)');
   const floatAction = isPhone && isActive;
-  const keyboardInset = useKeyboardInset(floatAction);
-  const floatBottom = FLOAT_MARGIN + keyboardInset;
+  const keyboard = useKeyboardInset(floatAction);
+  const floatBottom = FLOAT_MARGIN + keyboard.inset;
   // the progress bar: first-try correct answers since the last mistake
   const [streak, setStreak] = useState(0);
   const [failCount, setFailCount] = useState(0);
@@ -242,7 +257,9 @@ const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, langua
       if (!form || !input || input.tagName !== 'INPUT' || !form.contains(input)) {
         return;
       }
-      const buttonTop = document.documentElement.clientHeight - floatBottom - FLOAT_BUTTON_HEIGHT;
+      // fixed `bottom` is measured from the bottom of the fixed-position area
+      const areaBottom = keyboard.fixedBottom ?? document.documentElement.clientHeight;
+      const buttonTop = areaBottom - floatBottom - FLOAT_BUTTON_HEIGHT;
       if (input.getBoundingClientRect().bottom > buttonTop - FLOAT_MARGIN) {
         input.scrollIntoView({ block: 'center', behavior: 'smooth' });
       }
@@ -256,7 +273,7 @@ const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, langua
       clearTimeout(timer);
       form && form.removeEventListener('focusin', onFocus);
     };
-  }, [floatAction, floatBottom]);
+  }, [floatAction, floatBottom, keyboard.fixedBottom]);
 
   return (
     <Form
@@ -366,6 +383,7 @@ const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, langua
               // only the shown tense floats its button; `form` ties it back to this form
               floatAction && createPortal(
                 <FloatingAction style={{ bottom: floatBottom }}>
+                  {SHOW_KB_DEBUG && keyboard.debug && <KbDebug>{keyboard.debug}</KbDebug>}
                   {
                     allCorrect ?
                       <NextTenseButton type="button" onClick={onNext}>{nextLabel}</NextTenseButton> :
