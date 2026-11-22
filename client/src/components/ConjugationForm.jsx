@@ -1,5 +1,4 @@
-import React, { useEffect, useId, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useEffect, useRef, useState } from 'react';
 import { Form, Field } from 'react-final-form'
 import styled from 'styled-components';
 import shuffle from 'lodash/shuffle';
@@ -7,8 +6,6 @@ import shuffle from 'lodash/shuffle';
 import { LANGUAGE_TO_LABELS, applicablePersons } from '../constants/Constants';
 import { checkAnswer, ROOT_TYPO } from '../constants/Answers';
 import ProgressBar from './ProgressBar';
-import useKeyboardInset from './useKeyboardInset';
-import useMediaQuery from './useMediaQuery';
 import {
   ACCENT,
   ACCENT_TEXT,
@@ -24,7 +21,6 @@ import {
   SEPARATOR,
   SLIP_SOFT,
   SLIP_TEXT,
-  SURFACE,
   TERTIARY_LABEL,
 } from '../constants/StyleConstants';
 
@@ -125,50 +121,41 @@ const CheckButton = styled.button`
   }
 `
 
-// Phones: the Check / Next button floats at the bottom of what's visible, so it
-// stays reachable above the on-screen keyboard. Rendered into <body> because the
-// sliding panes use transforms, which would trap a position: fixed child.
-const FLOAT_MARGIN = 12;
-const FLOAT_BUTTON_HEIGHT = 44;
+// one row: the input, plus (phones) a small Check button beside it while it has focus
+const InputRow = styled.div`
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+`
 
-const FloatingAction = styled.div`
-  position: fixed;
-  left: ${FLOAT_MARGIN}px;
-  right: ${FLOAT_MARGIN}px;
-  z-index: 20;
-  /* the Check button's tint is translucent; back it so the form doesn't show through */
-  border-radius: 10px;
-  background: ${SURFACE};
+// Phones: a small Check button beside the focused box, so answers can be checked
+// without first closing the keyboard to reach the Check button at the bottom.
+// Beside rather than below the box: iOS only guarantees the focused input itself
+// stays visible above the keyboard.
+const RowCheck = styled.button`
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: ${ACCENT_SOFT};
+  color: ${ACCENT_TEXT};
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
 
-  > button {
-    margin-top: 0;
-    height: ${FLOAT_BUTTON_HEIGHT}px;
-    padding: 0;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+  @media (max-width: 900px) {
+    ${InputRow}:focus-within > & {
+      display: inline-flex;
+    }
   }
 `
 
-// ?kbdebug in the URL shows the keyboard measurements above the button
-const KbDebug = styled.div`
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  right: 0;
-  margin-bottom: 4px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.75);
-  color: #fff;
-  font: 11px/1.4 ui-monospace, monospace;
-`
-const SHOW_KB_DEBUG = typeof window !== 'undefined' && /[?&]kbdebug\b/.test(window.location.search);
-
-// keeps the end of the form scrollable out from under the floating button
-const FloatSpacer = styled.div`
-  height: ${FLOAT_BUTTON_HEIGHT + FLOAT_MARGIN}px;
-`
-
-// tapping the floating button mustn't take focus from the input, or iOS closes the keyboard
+// tapping a check button mustn't take focus from the input, or iOS closes the keyboard
 const keepInputFocus = { onMouseDown: event => event.preventDefault() };
 
 const NextTenseButton = styled.button`
@@ -213,11 +200,6 @@ const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, langua
 
   const allCorrect = applicable.length > 0 && applicable.every(person => locked[person]);
   const formRef = useRef(null);
-  const formId = useId();
-  const isPhone = useMediaQuery('(max-width: 900px)');
-  const floatAction = isPhone && isActive;
-  const keyboard = useKeyboardInset(floatAction);
-  const floatBottom = FLOAT_MARGIN + keyboard.inset;
   // the progress bar: first-try correct answers since the last mistake
   const [streak, setStreak] = useState(0);
   const [failCount, setFailCount] = useState(0);
@@ -244,36 +226,6 @@ const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, langua
       focusFirstOpenInput(form);
     }
   }, [locked]);
-
-  // phones: if the focused box ends up behind the floating button (the keyboard
-  // just opened, or focus moved down), scroll it to the middle of what's visible
-  useEffect(() => {
-    if (!floatAction) {
-      return undefined;
-    }
-    const reveal = () => {
-      const input = document.activeElement;
-      const form = formRef.current;
-      if (!form || !input || input.tagName !== 'INPUT' || !form.contains(input)) {
-        return;
-      }
-      // fixed `bottom` is measured from the bottom of the fixed-position area
-      const areaBottom = keyboard.fixedBottom ?? document.documentElement.clientHeight;
-      const buttonTop = areaBottom - floatBottom - FLOAT_BUTTON_HEIGHT;
-      if (input.getBoundingClientRect().bottom > buttonTop - FLOAT_MARGIN) {
-        input.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      }
-    };
-    // give the keyboard and iOS's own scrolling a moment to settle
-    const timer = setTimeout(reveal, 120);
-    const form = formRef.current;
-    const onFocus = () => setTimeout(reveal, 350);
-    form && form.addEventListener('focusin', onFocus);
-    return () => {
-      clearTimeout(timer);
-      form && form.removeEventListener('focusin', onFocus);
-    };
-  }, [floatAction, floatBottom, keyboard.fixedBottom]);
 
   return (
     <Form
@@ -317,7 +269,7 @@ const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, langua
       subscription={{}}
       render={
         ({ handleSubmit }) => (
-          <form ref={formRef} id={formId} onSubmit={handleSubmit} autoComplete={ 'off' }>
+          <form ref={formRef} onSubmit={handleSubmit} autoComplete={ 'off' }>
           {
             personOrder.map(person => {
               const isApplicable = applicable.includes(person);
@@ -336,12 +288,15 @@ const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, langua
                       const showError = !isLocked && meta.submitError && wasAttempted;
                       return (
                         <InputContainer>
-                          <FormInput
-                            {...input}
-                            disabled={isLocked}
-                            spellCheck={false}
-                            $state={shouldShow ? (showError ? 'wrong' : 'correct') : null}
-                            type="text" />
+                          <InputRow>
+                            <FormInput
+                              {...input}
+                              disabled={isLocked}
+                              spellCheck={false}
+                              $state={shouldShow ? (showError ? 'wrong' : 'correct') : null}
+                              type="text" />
+                            <RowCheck type="submit" aria-label="Check" tabIndex={-1} {...keepInputFocus}>✓</RowCheck>
+                          </InputRow>
                           <Answer
                             $shouldShow={shouldShow}
                             $showError={showError}
@@ -373,25 +328,9 @@ const ConjugationForm = ({ verbConjugations, infinitive, tense, isActive, langua
               failCount={failCount}
             />
             {
-              isPhone ?
-                <FloatSpacer /> :
-                allCorrect ?
-                  <NextTenseButton type="button" data-next onClick={onNext}>{nextLabel}</NextTenseButton> :
-                  <CheckButton type="submit">Check</CheckButton>
-            }
-            {
-              // only the shown tense floats its button; `form` ties it back to this form
-              floatAction && createPortal(
-                <FloatingAction style={{ bottom: floatBottom }}>
-                  {SHOW_KB_DEBUG && keyboard.debug && <KbDebug>{keyboard.debug}</KbDebug>}
-                  {
-                    allCorrect ?
-                      <NextTenseButton type="button" onClick={onNext}>{nextLabel}</NextTenseButton> :
-                      <CheckButton type="submit" form={formId} {...keepInputFocus}>Check</CheckButton>
-                  }
-                </FloatingAction>,
-                document.body
-              )
+              allCorrect ?
+                <NextTenseButton type="button" data-next onClick={onNext}>{nextLabel}</NextTenseButton> :
+                <CheckButton type="submit">Check</CheckButton>
             }
           </form>
         )
